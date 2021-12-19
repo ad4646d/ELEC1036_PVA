@@ -32,6 +32,20 @@ float rghtVelEst = 0;
 #define XSHUT_LEFT 10
 #define XSHUT_RGHT 9
 
+//~~Variables for left sensor averaging~~//
+//~~Velocity Averaging~~/
+#define leftVelVals 20
+float leftVelArray[leftVelVals];
+float leftVelAvg = 0;
+byte leftVelLoc;
+
+//~~Variables for right sensor averaging~~//
+//~~Velocity Averaging~~/
+#define rghtVelVals 20
+float rghtVelArray[rghtVelVals];
+float rghtVelAvg = 0;
+byte rghtVelLoc;
+
 void setup() {
 
     Serial.begin(115200);
@@ -91,14 +105,32 @@ void setup() {
         SEN_RGHT.setDistanceMode(VL53L1X::Long); 
         SEN_RGHT.setMeasurementTimingBudget(50000); 
         SEN_RGHT.startContinuous(50); 
-    }     
+    } 
+
+    for (int x = 0; x < leftVelVals; x++) //empty left vel est array
+    {
+        leftVelArray[x] = 0;
+    } 
+
+    for (int x = 0; x < rghtVelVals; x++) //empty right vel est array
+    {
+        rghtVelArray[x] = 0;
+    }       
 }
 
 void loop() {
     if((millis()- startRead) > readFreq)
     {
         leftVelEst_func();
+        leftVelAvg_func();
+        Serial.print(",");
+        Serial.print(leftVelAvg);
+        Serial.print(",");
         rghtVelEst_func();
+        rghtVelAvg_func();
+        Serial.print(",");
+        Serial.print(rghtVelAvg);
+        Serial.print(",");
         
         startRead = millis();        
 
@@ -124,6 +156,22 @@ void leftVelEst_func()
     Serial.print(",");
 }
 
+void leftVelAvg_func()
+{
+    leftVelArray[leftVelLoc] = leftVelEst;
+    if (++leftVelLoc == leftVelVals)
+    {
+        leftVelLoc = 0;
+    }
+        
+    for (int x = 0; x < leftVelVals; x++)
+    {
+        leftVelAvg += leftVelArray[x];
+    }
+
+    leftVelAvg /= leftVelVals;
+}
+
 void rghtVelEst_func()
 {
     
@@ -141,4 +189,20 @@ void rghtVelEst_func()
     prevRghtDist = newRghtDist;
     prevRghtTime = newRghtTime;
     Serial.println("");
+}
+
+void rghtVelAvg_func()
+{
+    rghtVelArray[rghtVelLoc] = rghtVelEst;
+    if (++rghtVelLoc == rghtVelVals)
+    {
+        rghtVelLoc = 0;
+    }
+        
+    for (int x = 0; x < rghtVelVals; x++)
+    {
+        rghtVelAvg += rghtVelArray[x];
+    }
+
+    rghtVelAvg /= rghtVelVals;
 }
