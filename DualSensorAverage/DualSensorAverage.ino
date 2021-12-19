@@ -98,42 +98,49 @@ void setup() {
 void loop() {
     if((millis()- startRead) > readFreq)
     {
-        //Left Sensor Read
-        
-        newLeftDist = SEN_LEFT.read();
-        
-        newLeftTime = millis();
-        deltLeftTime = (newLeftTime-prevLeftTime);
-        
-        
-        deltLeftDist = (prevLeftDist - newLeftDist);
-        
-        leftVelEst=(deltLeftDist/deltLeftTime);
-        
-        Serial.print(leftVelEst);
-        prevLeftDist = newLeftDist;
-        prevLeftTime = newLeftTime;
-        Serial.print(",");
-        //Right Sensor Read
-        
-        newRghtDist = SEN_RGHT.read();
-        
-        newRghtTime = millis();
-        deltRghtTime = (newRghtTime-prevRghtTime);
-        
-        deltRghtDist = (prevRghtDist - newRghtDist);
-        
-        rghtVelEst=(deltRghtDist/deltRghtTime);
-        
-        Serial.print(rghtVelEst);
-        prevRghtDist = newRghtDist;
-        prevRghtTime = newRghtTime;
-        Serial.println("");
-
-       
-         
+        leftVelEst_func();
+        rghtVelEst_func();
         
         startRead = millis();        
 
     }
+}
+
+void rghtVelEst_func ()
+{
+    
+    //Right Sensor Read
+    
+    newRghtDist = SEN_RGHT.read();
+    
+    newRghtTime = millis();
+    deltRghtTime = (newRghtTime-prevRghtTime);
+    
+    deltRghtDist = (prevRghtDist - newRghtDist);
+    
+    rghtVelEst=(deltRghtDist/deltRghtTime);
+    
+    Serial.print(rghtVelEst);
+    prevRghtDist = newRghtDist;
+    prevRghtTime = newRghtTime;
+    Serial.println("");
+}
+
+void leftVelEst_func()
+{
+    //Left Sensor Read
+    newLeftDist = SEN_LEFT.read();
+    
+    newLeftTime = millis();
+    deltLeftTime = (newLeftTime-prevLeftTime);
+    
+    
+    deltLeftDist = (prevLeftDist - newLeftDist);
+    
+    leftVelEst=(deltLeftDist/deltLeftTime);
+    
+    Serial.print(leftVelEst);
+    prevLeftDist = newLeftDist;
+    prevLeftTime = newLeftTime;
+    Serial.print(",");
 }
