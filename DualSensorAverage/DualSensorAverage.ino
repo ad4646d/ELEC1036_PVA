@@ -29,7 +29,6 @@ float prevRghtDist = 0;
 float deltRghtDist = 0;
 float rghtVelEst = 0;
 
-
 #define XSHUT_LEFT 10
 #define XSHUT_RGHT 9
 
@@ -106,26 +105,6 @@ void loop() {
     }
 }
 
-void rghtVelEst_func ()
-{
-    
-    //Right Sensor Read
-    
-    newRghtDist = SEN_RGHT.read();
-    
-    newRghtTime = millis();
-    deltRghtTime = (newRghtTime-prevRghtTime);
-    
-    deltRghtDist = (prevRghtDist - newRghtDist);
-    
-    rghtVelEst=(deltRghtDist/deltRghtTime);
-    
-    Serial.print(rghtVelEst);
-    prevRghtDist = newRghtDist;
-    prevRghtTime = newRghtTime;
-    Serial.println("");
-}
-
 void leftVelEst_func()
 {
     //Left Sensor Read
@@ -143,4 +122,23 @@ void leftVelEst_func()
     prevLeftDist = newLeftDist;
     prevLeftTime = newLeftTime;
     Serial.print(",");
+}
+
+void rghtVelEst_func()
+{
+    
+    //Right Sensor Read
+    newRghtDist = SEN_RGHT.read();
+    
+    newRghtTime = millis();
+    deltRghtTime = (newRghtTime-prevRghtTime);
+    
+    deltRghtDist = (prevRghtDist - newRghtDist);
+    
+    rghtVelEst=(deltRghtDist/deltRghtTime);
+    
+    Serial.print(rghtVelEst);
+    prevRghtDist = newRghtDist;
+    prevRghtTime = newRghtTime;
+    Serial.println("");
 }
