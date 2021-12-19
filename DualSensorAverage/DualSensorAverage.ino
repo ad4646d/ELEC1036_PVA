@@ -122,20 +122,26 @@ void loop() {
     if((millis()- startRead) > readFreq)
     {
         leftVelEst_func();
+        //leftVelEst_comma_print();
+        leftVelEst_verbose_print();
         leftVelAvg_func();
-        Serial.print(",");
-        Serial.print(leftVelAvg);
-        Serial.print(",");
+        //leftVelAvg_comma_print();
+        leftVelAvg_verbose_print();
+        
         rghtVelEst_func();
+        //rghtVelEst_comma_print();
+        rghtVelEst_verbose_print();
         rghtVelAvg_func();
-        Serial.print(",");
-        Serial.print(rghtVelAvg);
-        Serial.print(",");
+        //rghtVelAvg_comma_print();
+        rghtVelAvg_verbose_print();
+        Serial.println("");        
         
         startRead = millis();        
 
     }
 }
+
+//~~~~~ Left Sensor Functions ~~~~~//
 
 void leftVelEst_func()
 {
@@ -145,18 +151,29 @@ void leftVelEst_func()
     newLeftTime = millis();
     deltLeftTime = (newLeftTime-prevLeftTime);
     
-    
     deltLeftDist = (prevLeftDist - newLeftDist);
     
     leftVelEst=(deltLeftDist/deltLeftTime);
-    
-    Serial.print(leftVelEst);
+       
     prevLeftDist = newLeftDist;
     prevLeftTime = newLeftTime;
+    
+}
+
+void leftVelEst_comma_print()//Prints the latest left velocity value with commas
+{
+    Serial.print(leftVelEst);
     Serial.print(",");
 }
 
-void leftVelAvg_func()
+void leftVelEst_verbose_print()//Prints the latest left velocity value with commas
+{
+    Serial.print("Real-time left velocity est: ");
+    Serial.print(leftVelEst);
+    Serial.print("m/s -- ");
+}
+
+void leftVelAvg_func() //Calculates rolling average for left velocity
 {
     leftVelArray[leftVelLoc] = leftVelEst;
     if (++leftVelLoc == leftVelVals)
@@ -172,6 +189,22 @@ void leftVelAvg_func()
     leftVelAvg /= leftVelVals;
 }
 
+void leftVelAvg_comma_print() //Prints the latest left average velocity value with commas
+{
+    Serial.print(",");
+    Serial.print(leftVelAvg);
+    Serial.print(",");
+}
+
+void leftVelAvg_verbose_print() //Prints the latest left average velocity value with human readable comments
+{
+    Serial.print("Rolling Left Vel Avg: ");
+    Serial.print(leftVelAvg);
+    Serial.print("m/s -- ");
+}
+
+//~~~~~ Right Sensor Functions ~~~~~//
+
 void rghtVelEst_func()
 {
     
@@ -185,13 +218,25 @@ void rghtVelEst_func()
     
     rghtVelEst=(deltRghtDist/deltRghtTime);
     
-    Serial.print(rghtVelEst);
     prevRghtDist = newRghtDist;
     prevRghtTime = newRghtTime;
-    Serial.println("");
 }
 
-void rghtVelAvg_func()
+void rghtVelEst_comma_print()//Prints the latest right velocity value with commas
+{
+    Serial.print(",");
+    Serial.print(rghtVelEst);
+    Serial.print(",");
+}
+
+void rghtVelEst_verbose_print()//Prints the latest right velocity value with commas
+{
+    Serial.print("Real-time right velocity est: ");
+    Serial.print(rghtVelEst);
+    Serial.print("m/s -- ");
+}
+
+void rghtVelAvg_func() //Calculates rolling average for right velocity
 {
     rghtVelArray[rghtVelLoc] = rghtVelEst;
     if (++rghtVelLoc == rghtVelVals)
@@ -205,4 +250,18 @@ void rghtVelAvg_func()
     }
 
     rghtVelAvg /= rghtVelVals;
+}
+
+void rghtVelAvg_comma_print() //Prints the latest right average velocity value with commas
+{
+    Serial.print(",");
+    Serial.print(rghtVelAvg);
+    Serial.print(",");
+}
+
+void rghtVelAvg_verbose_print() //Prints the latest right average velocity value with human readable comments
+{
+    Serial.print("Rolling Right Vel Avg: ");
+    Serial.print(rghtVelAvg);
+    Serial.print("m/s");
 }
