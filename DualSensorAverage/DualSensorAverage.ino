@@ -34,20 +34,20 @@ float rghtVelEst = 0;
 
 //~~Variables for left sensor averaging~~//
 //~~Velocity Averaging~~/
-#define leftVelVals 20
+#define leftVelVals 3
 float leftVelArray[leftVelVals];
 float leftVelAvg = 0;
 byte leftVelLoc;
 
 //~~Distance Averaging~~/
-#define leftDistVals 15
+#define leftDistVals 5
 float leftDistArray[leftDistVals];
 float leftDistAvg = 0;
 byte leftDistLoc;
 
 //~~Variables for right sensor averaging~~//
 //~~Velocity Averaging~~/
-#define rghtVelVals 20
+#define rghtVelVals 3
 float rghtVelArray[rghtVelVals];
 float rghtVelAvg = 0;
 byte rghtVelLoc;
@@ -138,7 +138,7 @@ void setup() {
     for (int x = 0; x < rghtDistVals; x++) //empty right vel est array
     {
         rghtDistArray[x] = 0;
-    }     
+    } 
 }
 
 void loop() {
@@ -152,8 +152,8 @@ void loop() {
         leftDistAvg_func();
         leftVelAvg_comma_print();
         //leftVelAvg_verbose_print();
-        leftDist_comma_print();
-        leftDistAvg_comma_print();
+        //leftDist_comma_print();
+        //leftDistAvg_comma_print();
         //leftDistAvg_verbose_print();
         
         //~~right sensor
@@ -164,8 +164,8 @@ void loop() {
         rghtDistAvg_func();
         rghtVelAvg_comma_print();
         //rghtVelAvg_verbose_print();
-        rghtDist_comma_print();
-        rghtDistAvg_comma_print();
+        //rghtDist_comma_print();
+        //rghtDistAvg_comma_print();
         //rghtDistAvg_verbose_print();
         Serial.println("");        
         
@@ -357,7 +357,7 @@ void rghtVelAvg_verbose_print() //Prints the latest right average velocity value
 
 void rghtDistAvg_func() //Calculates rolling average for left distance
 {
-    rghtDistArray[rghtDistLoc] = newRghtDist;
+    /*rghtDistArray[rghtDistLoc] = newRghtDist;
     if (++rghtDistLoc == rghtDistVals)
     {
         rghtDistLoc = 0;
@@ -368,7 +368,21 @@ void rghtDistAvg_func() //Calculates rolling average for left distance
         rghtDistAvg += rghtDistArray[x];
     }
 
+    rghtDistAvg /= rghtDistVals;*/
+
+    rghtDistArray[rghtDistLoc] = newRghtDist;
+    if(++rghtDistLoc == rghtDistVals)
+    {
+        rghtDistLoc = 0;
+    }
+    
+    for (int x = 0; x < rghtDistVals; x++)
+    {
+        rghtDistAvg += rghtDistArray[x];
+    }
+
     rghtDistAvg /= rghtDistVals;
+
 }
 
 void rghtDistAvg_comma_print() //Prints the latest right average distance value with commas
