@@ -39,12 +39,25 @@ float leftVelArray[leftVelVals];
 float leftVelAvg = 0;
 byte leftVelLoc;
 
+//~~Distance Averaging~~/
+#define leftDistVals 15
+float leftDistArray[leftDistVals];
+float leftDistAvg = 0;
+byte leftDistLoc;
+
 //~~Variables for right sensor averaging~~//
 //~~Velocity Averaging~~/
 #define rghtVelVals 20
 float rghtVelArray[rghtVelVals];
 float rghtVelAvg = 0;
 byte rghtVelLoc;
+
+//~~Distance Averaging~~/
+#define rghtDistVals 15
+float rghtDistArray[rghtDistVals];
+float rghtDistAvg = 0;
+byte rghtDistLoc;
+
 
 void setup() {
 
@@ -115,35 +128,55 @@ void setup() {
     for (int x = 0; x < rghtVelVals; x++) //empty right vel est array
     {
         rghtVelArray[x] = 0;
-    }       
+    }
+
+    for (int x = 0; x < leftDistVals; x++) //empty right vel est array
+    {
+        leftDistArray[x] = 0;
+    }  
+    
+    for (int x = 0; x < rghtDistVals; x++) //empty right vel est array
+    {
+        rghtDistArray[x] = 0;
+    }     
 }
 
 void loop() {
     if((millis()- startRead) > readFreq)
     {
+        //~~left sensor
         leftVelEst_func();
-        //leftVelEst_comma_print();
-        leftVelEst_verbose_print();
+        leftVelEst_comma_print();
+        //leftVelEst_verbose_print();
         leftVelAvg_func();
-        //leftVelAvg_comma_print();
-        leftVelAvg_verbose_print();
+        leftDistAvg_func();
+        leftVelAvg_comma_print();
+        //leftVelAvg_verbose_print();
+        leftDist_comma_print();
+        leftDistAvg_comma_print();
+        //leftDistAvg_verbose_print();
         
+        //~~right sensor
         rghtVelEst_func();
-        //rghtVelEst_comma_print();
-        rghtVelEst_verbose_print();
+        rghtVelEst_comma_print();
+        //rghtVelEst_verbose_print();
         rghtVelAvg_func();
-        //rghtVelAvg_comma_print();
-        rghtVelAvg_verbose_print();
+        rghtDistAvg_func();
+        rghtVelAvg_comma_print();
+        //rghtVelAvg_verbose_print();
+        rghtDist_comma_print();
+        rghtDistAvg_comma_print();
+        //rghtDistAvg_verbose_print();
         Serial.println("");        
         
         startRead = millis();        
 
     }
-}
+} //End of "loop"
 
 //~~~~~ Left Sensor Functions ~~~~~//
 
-void leftVelEst_func()
+void leftVelEst_func() //Estimating velocity of objects approaching left sensor
 {
     //Left Sensor Read
     newLeftDist = SEN_LEFT.read();
@@ -171,6 +204,19 @@ void leftVelEst_verbose_print()//Prints the latest left velocity value with comm
     Serial.print("Real-time left velocity est: ");
     Serial.print(leftVelEst);
     Serial.print("m/s -- ");
+}
+
+void leftDist_comma_print()//Prints the latest left velocity value with commas
+{
+    Serial.print(newLeftDist);
+    Serial.print(",");
+}
+
+void leftDist_verbose_print()//Prints the latest left velocity value with commas
+{
+    Serial.print("Real-time left dist: ");
+    Serial.print(newLeftDist);
+    Serial.print("mmm -- ");
 }
 
 void leftVelAvg_func() //Calculates rolling average for left velocity
@@ -203,9 +249,39 @@ void leftVelAvg_verbose_print() //Prints the latest left average velocity value 
     Serial.print("m/s -- ");
 }
 
+void leftDistAvg_func() //Calculates rolling average for left distance
+{
+    leftDistArray[leftDistLoc] = newLeftDist;
+    if (++leftDistLoc == leftDistVals)
+    {
+        leftDistLoc = 0;
+    }
+        
+    for (int x = 0; x < leftDistVals; x++)
+    {
+        leftDistAvg += leftDistArray[x];
+    }
+
+    leftDistAvg /= leftDistVals;
+}
+
+void leftDistAvg_comma_print() //Prints the latest left average distance value with commas
+{
+    Serial.print(",");
+    Serial.print(leftDistAvg);
+    Serial.print(",");
+}
+
+void leftDistAvg_verbose_print() //Prints the latest left average distance value with human readable comments
+{
+    Serial.print("Rolling Left Dist Avg: ");
+    Serial.print(leftDistAvg);
+    Serial.print("mm -- ");
+}
+
 //~~~~~ Right Sensor Functions ~~~~~//
 
-void rghtVelEst_func()
+void rghtVelEst_func() //Estimating velocity of objects approaching right sensor
 {
     
     //Right Sensor Read
@@ -236,6 +312,19 @@ void rghtVelEst_verbose_print()//Prints the latest right velocity value with com
     Serial.print("m/s -- ");
 }
 
+void rghtDist_comma_print()//Prints the latest left velocity value with commas
+{
+    Serial.print(newRghtDist);
+    Serial.print(",");
+}
+
+void rghtDist_verbose_print()//Prints the latest left velocity value with commas
+{
+    Serial.print("Real-time right dist: ");
+    Serial.print(newRghtDist);
+    Serial.print("mmm -- ");
+}
+
 void rghtVelAvg_func() //Calculates rolling average for right velocity
 {
     rghtVelArray[rghtVelLoc] = rghtVelEst;
@@ -264,4 +353,34 @@ void rghtVelAvg_verbose_print() //Prints the latest right average velocity value
     Serial.print("Rolling Right Vel Avg: ");
     Serial.print(rghtVelAvg);
     Serial.print("m/s");
+}
+
+void rghtDistAvg_func() //Calculates rolling average for left distance
+{
+    rghtDistArray[rghtDistLoc] = newRghtDist;
+    if (++rghtDistLoc == rghtDistVals)
+    {
+        rghtDistLoc = 0;
+    }
+        
+    for (int x = 0; x < rghtDistVals; x++)
+    {
+        rghtDistAvg += rghtDistArray[x];
+    }
+
+    rghtDistAvg /= rghtDistVals;
+}
+
+void rghtDistAvg_comma_print() //Prints the latest right average distance value with commas
+{
+    Serial.print(",");
+    Serial.print(rghtDistAvg);
+    Serial.print(",");
+}
+
+void rghtDistAvg_verbose_print() //Prints the latest right average distance value with human readable comments
+{
+    Serial.print("Rolling Rght Dist Avg: ");
+    Serial.print(rghtDistAvg);
+    Serial.print("mm -- ");
 }
