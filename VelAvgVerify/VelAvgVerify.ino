@@ -39,8 +39,6 @@ void setup()
   {
       history[x] = 0;
   }
-    
-
 }
 
 void loop()
