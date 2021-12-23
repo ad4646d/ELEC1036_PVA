@@ -14,8 +14,8 @@ float deltDist = 0;
 float velEst = 0;
 
 #define HISTORY_SIZE 3 // Number of velocity values that are stored for averaging
-float history[HISTORY_SIZE];
-byte historySpot;
+float history[HISTORY_SIZE]; // Array to hold velocity estimates
+byte historySpot; // Used in for-loop for moving through the array
 
 void setup()
 {
