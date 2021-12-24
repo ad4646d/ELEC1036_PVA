@@ -53,7 +53,7 @@ void loop()
 
     avgVelEst_func();
 
-    if (velEst < avgVelEst)
+    if (velEst < avgVelEst && velEst >0.1)
     {
       Serial.println("!!Warning!! Object is approaching at: ");
       Serial.print(velEst);
@@ -61,12 +61,17 @@ void loop()
       Serial.println("");
     }
 
-    if (velEst > avgVelEst)
+    if (velEst > avgVelEst && velEst < -0.1)
     {
       Serial.println("Object is departing at: ");
       Serial.print(velEst);
       Serial.print("m/s.");
       Serial.println("");
+    }
+
+    if (velEst <0.1 && velEst > -0.1)
+    {
+      Serial.println("Object is presumed to be stationary.");
     }
 
     //Serial.print(avgVelEst);//Average distance 
