@@ -47,14 +47,14 @@ void setup()
 void loop()
 {
   velEst_func();
-  //Serial.print(velEst);//Real-time distance
-  //Serial.print(",");
+  Serial.print(velEst);//Real-time distance
+  Serial.print(",");
   avgVelEst_func();
   objDirectionClassification_func();
-  objDirectionPrint_func();
-  //Serial.print(avgVelEst);//Average distance 
-  //Serial.print(",");
-  //Serial.println("");
+  //objDirectionPrint_func();
+  Serial.print(avgVelEst);//Average distance 
+  Serial.print(",");
+  Serial.println("");
   if (ToF.timeoutOccurred()) 
   { 
     Serial.print(" Sensor timed out."); 
@@ -94,14 +94,12 @@ void velEst_func ()
 
 void avgVelEst_func()
 {
-    history[historySpot] = velEst;
+  history[historySpot] = velEst;
   if (++historySpot == HISTORY_SIZE)
   {
     historySpot = 0;
   }
     
-
-  
   for (int x = 0; x < HISTORY_SIZE; x++)
   {
     avgVelEst += history[x];
