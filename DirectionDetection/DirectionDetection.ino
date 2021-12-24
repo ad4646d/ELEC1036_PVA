@@ -13,7 +13,7 @@ float prevDist = 0;
 float deltDist = 0;
 float velEst = 0;
 
-bool objDirection;
+int objDirection;
 
 #define HISTORY_SIZE 3 // Number of velocity values that are stored for averaging
 float history[HISTORY_SIZE]; // Array to hold velocity estimates
@@ -46,7 +46,6 @@ void setup()
 
 void loop()
 {
-    newDist = ToF.read(); 
     velEst_func();
     //Serial.print(velEst);//Real-time distance
     //Serial.print(",");
@@ -55,29 +54,47 @@ void loop()
 
     if (velEst < avgVelEst && velEst >0.1)
     {
-      Serial.println("!!Warning!! Object is approaching at: ");
-      Serial.print(velEst);
-      Serial.print("m/s.");
-      Serial.println("");
+      objDirection = 1;
     }
 
     if (velEst > avgVelEst && velEst < -0.1)
     {
-      Serial.println("Object is departing at: ");
-      Serial.print(velEst);
-      Serial.print("m/s.");
-      Serial.println("");
+      objDirection = 2;
     }
 
     if (velEst <0.1 && velEst > -0.1)
     {
-      Serial.println("Object is presumed to be stationary.");
+      objDirection = 3;
+    }
+
+    switch(objDirection)
+    {
+      case 1:
+        Serial.println("!!Warning!! Object is approaching at: ");
+        Serial.print(velEst);
+        Serial.print("m/s.");
+        Serial.println("");
+        break;
+      case 2:
+        Serial.println("Object is departing at: ");
+        Serial.print(velEst);
+        Serial.print("m/s.");
+        Serial.println("");
+        break;
+      case 3:
+        Serial.println("Object is presumed to be stationary.");
+        break;
+      default:
+        break;
     }
 
     //Serial.print(avgVelEst);//Average distance 
     //Serial.print(",");
     //Serial.println("");
-    if (ToF.timeoutOccurred()) { Serial.print(" TIMEOUT"); }
+    if (ToF.timeoutOccurred()) 
+    { 
+      Serial.print(" Sensor timed out."); 
+    }
 
     // Serial.println();
 }
