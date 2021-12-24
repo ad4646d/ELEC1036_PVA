@@ -46,58 +46,20 @@ void setup()
 
 void loop()
 {
-    velEst_func();
-    //Serial.print(velEst);//Real-time distance
-    //Serial.print(",");
-
-    avgVelEst_func();
-
-    if (velEst < avgVelEst && velEst >0.1)
-    {
-      objDirection = 1;
-    }
-
-    if (velEst > avgVelEst && velEst < -0.1)
-    {
-      objDirection = 2;
-    }
-
-    if (velEst <0.1 && velEst > -0.1)
-    {
-      objDirection = 3;
-    }
-
-    switch(objDirection)
-    {
-      case 1:
-        Serial.println("!!Warning!! Object is approaching at: ");
-        Serial.print(velEst);
-        Serial.print("m/s.");
-        Serial.println("");
-        break;
-      case 2:
-        Serial.println("Object is departing at: ");
-        Serial.print(velEst);
-        Serial.print("m/s.");
-        Serial.println("");
-        break;
-      case 3:
-        Serial.println("Object is presumed to be stationary.");
-        break;
-      default:
-        break;
-    }
-
-    //Serial.print(avgVelEst);//Average distance 
-    //Serial.print(",");
-    //Serial.println("");
-    if (ToF.timeoutOccurred()) 
-    { 
-      Serial.print(" Sensor timed out."); 
-    }
-
-    // Serial.println();
-}
+  velEst_func();
+  //Serial.print(velEst);//Real-time distance
+  //Serial.print(",");
+  avgVelEst_func();
+  objDirectionClassification_func();
+  objDirectionPrint_func();
+  //Serial.print(avgVelEst);//Average distance 
+  //Serial.print(",");
+  //Serial.println("");
+  if (ToF.timeoutOccurred()) 
+  { 
+    Serial.print(" Sensor timed out."); 
+  }
+} //End of 'loop'
 
 void velEst_func ()
 {
@@ -146,4 +108,46 @@ void avgVelEst_func()
   }
 
   avgVelEst /= HISTORY_SIZE;
+}
+
+void objDirectionClassification_func()
+{
+  if (velEst < avgVelEst && velEst >0.1) // Object is approaching
+  {
+    objDirection = 1;
+  }
+
+  if (velEst > avgVelEst && velEst < -0.1) // Object is departing
+  {
+    objDirection = 2;
+  }
+
+  if (velEst <0.1 && velEst > -0.1) // Object is stationary -- Change to use "avgVelEst" at a later date
+  {
+    objDirection = 3;
+  }
+}
+
+void objDirectionPrint_func()
+{
+  switch(objDirection)
+  {
+    case 1:
+      Serial.println("!!Warning!! Object is approaching at: ");
+      Serial.print(velEst);
+      Serial.print("m/s.");
+      Serial.println("");
+      break;
+    case 2:
+      Serial.println("Object is departing at: ");
+      Serial.print(velEst);
+      Serial.print("m/s.");
+      Serial.println("");
+      break;
+    case 3:
+      Serial.println("Object is presumed to be stationary.");
+      break;
+    default:
+      break;
+  }
 }
