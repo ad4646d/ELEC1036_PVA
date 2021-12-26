@@ -12,7 +12,8 @@ float velEst = 0;
 float ETA = 0;
 float avgETA = 0;
 
-int objDirection;
+int objDirection = 0;
+int impactWarn = 0;
 
 #define HISTORY_SIZE 3 // Number of velocity values that are stored for averaging
 float history[HISTORY_SIZE]; // Array to hold velocity estimates
@@ -49,8 +50,8 @@ void loop()
   avgVelEst_func();
   objDirectionClassification_func();
   impactETA_func();
-  //objDirectionPrint_func();
-  
+  hazardClassification_func();
+
   if (ToF.timeoutOccurred()) 
   { 
       Serial.print(" Sensor timed out."); 
@@ -130,19 +131,51 @@ void objDirectionPrint_func()
   }
 }
 
+void hazardClassification_func()
+{
+  switch(impactWarn)
+  {
+    case 1:
+      Serial.println("!!WARNING!! -- !!IMPACT PROBABLE!!");
+      break;
+    case 2:
+      switch(objDirection)
+      {
+        case 1:
+          Serial.println("!!Warning!! Object is approaching at: ");
+          Serial.print(velEst);
+          Serial.print("m/s.");
+          Serial.println("");
+          break;
+        case 2:
+          Serial.println("Object is departing at: ");
+          Serial.print(velEst);
+          Serial.print("m/s.");
+          Serial.println("");
+          break;
+        case 3:
+          Serial.println("Object is presumed to be stationary.");
+          break;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;      
+  }
+}
+
 void impactETA_func()
 {
   ETA = newDist / velEst;
    
-  if (ETA < 1000.00 && ETA > 0.00)
+  if (ETA < 500.00 && ETA > 0.00)
   {
-    Serial.print(ETA);
-    Serial.print(",");
-    Serial.println("");
+    impactWarn = 1;
   }
 
   else
   {
-    Serial.println("Object is likely stationary or moving away.");
+    impactWarn = 2;
   }
 }
