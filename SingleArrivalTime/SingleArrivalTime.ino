@@ -51,21 +51,15 @@ void loop()
     //objDirectionPrint_func();
     ETA = newDist / velEst;
    
-    if (ETA < 1000.00)
+    if (ETA < 1000.00 && ETA > 0.00)
     {
       Serial.print(ETA);
       Serial.print(",");
       Serial.println("");
     }
-
-    if (ETA > 1000.00)
+    else
     {
-      Serial.println("Object is likely stationary.");
-    }
-
-    if (ETA < -0.01)
-    {
-      Serial.println("Object is likely stationary.");
+      Serial.println("Object is likely stationary or moving away.");
     }
 
     if (ToF.timeoutOccurred()) 
