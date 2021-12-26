@@ -45,27 +45,16 @@ void setup()
 
 void loop()
 {
-    velEst_func();
-    avgVelEst_func();
-    objDirectionClassification_func();
-    //objDirectionPrint_func();
-    ETA = newDist / velEst;
-   
-    if (ETA < 1000.00 && ETA > 0.00)
-    {
-      Serial.print(ETA);
-      Serial.print(",");
-      Serial.println("");
-    }
-    else
-    {
-      Serial.println("Object is likely stationary or moving away.");
-    }
-
-    if (ToF.timeoutOccurred()) 
-    { 
-        Serial.print(" Sensor timed out."); 
-    }
+  velEst_func();
+  avgVelEst_func();
+  objDirectionClassification_func();
+  impactETA_func();
+  //objDirectionPrint_func();
+  
+  if (ToF.timeoutOccurred()) 
+  { 
+      Serial.print(" Sensor timed out."); 
+  }
 } //End of 'loop'
 
 void velEst_func ()
@@ -138,5 +127,22 @@ void objDirectionPrint_func()
       break;
     default:
       break;
+  }
+}
+
+void impactETA_func()
+{
+  ETA = newDist / velEst;
+   
+  if (ETA < 1000.00 && ETA > 0.00)
+  {
+    Serial.print(ETA);
+    Serial.print(",");
+    Serial.println("");
+  }
+
+  else
+  {
+    Serial.println("Object is likely stationary or moving away.");
   }
 }
