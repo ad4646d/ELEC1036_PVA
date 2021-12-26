@@ -1,7 +1,7 @@
 {
-    "port": "/dev/cu.usbmodem14101",
+    "port": "/dev/cu.usbmodem14201",
     "configuration": "mode=off",
     "board": "arduino:megaavr:nona4809",
-    "sketch": "DirectionDetection/DirectionDetection.ino",
+    "sketch": "DualDirectionDetection/DualDirectionDetection.ino",
     "programmer": "arduino:medbg"
 }
