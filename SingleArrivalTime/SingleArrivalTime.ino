@@ -1,46 +1,47 @@
-#include <Wire.h>
-#include <VL53L1X.h>
+#include <VL53L1X.h> //Library from: https://github.com/pololu/vl53l1x-arduino
+#include <Wire.h>   //Standard arduino library
 
 VL53L1X ToF; //Create ToF as an object
-long startTime = 0;
-long deltTime = 0;
 
+//~~Velocity Estimate Variables~~//
 float newDist = 0;
 float prevDist = 0;
 float deltDist = 0;
+long startTime = 0;
+long deltTime = 0;
 float velEst = 0;
-float ETA = 0;
-float avgETA = 0;
 
-int objDirection = 0;
-int impactWarn = 0;
-
+//~~Velocity Averaging Variables~~//
 #define HISTORY_SIZE 3 // Number of velocity values that are stored for averaging
 float history[HISTORY_SIZE]; // Array to hold velocity estimates
 byte historySpot; // Used in for-loop for moving through the array
 float avgVelEst = 0;
 
+//~~Object direction and impact ETA variables~~//
+float ETA = 0;
+int objDirection = 0;
+int impactWarn = 0;
+
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(115200); // High serial baud rate
   Wire.begin();
   Wire.setClock(400000); // use 400 kHz I2C
-
   ToF.setTimeout(500);
+
   if (!ToF.init())
   {
-    Serial.println("Failed to detect and initialize ToF!");
+    Serial.println("Failed to detect ToF! Is it connected?");
     while (1);
-    
   }
 
-  ToF.setDistanceMode(VL53L1X::Long);
-  ToF.setMeasurementTimingBudget(50000);
-  ToF.startContinuous(50);
+  ToF.setDistanceMode(VL53L1X::Long); // Long = ToF set to range at max capable distance
+  ToF.setMeasurementTimingBudget(50000); // Time in microseconds
+  ToF.startContinuous(50); // Time in milliseconds
   
-  for (int x = 0; x < HISTORY_SIZE; x++)
+  for (int x = 0; x < HISTORY_SIZE; x++) 
   {
-      history[x] = 0;
+    history[x] = 0;
   }
 }
 
@@ -75,6 +76,8 @@ void velEst_func ()
 
 void avgVelEst_func()
 {
+  //Averaging algorithm based on SparkFun VL53L1X example: https://bit.ly/3qt83Yh
+  //SparkFun's VL53L1X library wasn't used as it was not as well documented as Pololu's but it does feature some useful examples.
   history[historySpot] = velEst;
   if (++historySpot == HISTORY_SIZE)
   {
