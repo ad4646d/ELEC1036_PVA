@@ -28,15 +28,15 @@ int oneStrideAway = 250;
 
 //~~Haptic feedback variables
 int hapticScore = 0;
-const int leftHaptPin = 3;
-int leftHaptState = 0; //Will either be 0 or a val between 0-255
-int leftHaptSet = 0; //Sets the analogOut value
-int leftMaxHapt = 0;
-int leftHaptCount = 0;
-unsigned long prevLeftHaptMillis = 0;
-long leftInteval = 0;
-long leftDwell = 0;
-long leftHaptStart = 0;
+const int vibePin = 3;
+int vibeState = 0;
+int vibeSet = 0;
+int maxVibe = 0;
+int vibeCount = 0;
+unsigned long currentMillis = 0;
+unsigned long previousMillis = 0;
+long interval = 0;
+long dwell = 0;
 
 
 void setup()
@@ -69,7 +69,7 @@ void loop()
   objDirectionClassification_func();
   impactETA_func();
   hazardClassification_func();
-  hapticFeedbac_func();
+  hapticFeedback_func();
 
   if (ToF.timeoutOccurred()) 
   { 
@@ -158,7 +158,7 @@ void hazardClassification_func()
   {
     case 1:
       Serial.println("!!WARNING!! -- !!IMPACT PROBABLE!!");
-      hapticScore = 4;
+      hapticScore = 5;
       break;
     case 2:
       switch(objDirection)
@@ -167,20 +167,29 @@ void hazardClassification_func()
             // Distance threshold detection
             if(newDist > twoStridesAway)
             {
-                hapticScore = 0;
-                Serial.println("Object is more than two strides away.");
+              hapticScore = 0;
+              Serial.print("Object is more than two strides away, hapticScore = ");
+              Serial.print(hapticScore);
+              Serial.print(", vibeState = ");
+              Serial.println(vibeState);
             }
 
             if((newDist < twoStridesAway) && (newDist > oneStrideAway))
             {
-                hapticScore = 2;
-                Serial.println("Object is within two strides.");
+              hapticScore = 2;
+              Serial.print("Object is within two strides, hapticScore = ");
+              Serial.print(hapticScore);
+              Serial.print(", vibeState = ");
+              Serial.println(vibeState);
             }
 
             if(newDist < oneStrideAway)
             {
-                hapticScore = 3;
-                Serial.println("Object is within one stride.");
+              hapticScore = 1;
+              Serial.print("Object is within one stride, hapticScore = ");
+              Serial.print(hapticScore);
+              Serial.print(", vibeState = ");
+              Serial.println(vibeState);
             }
 
             /*Serial.println("!!Warning!! Object is approaching at: ");
@@ -189,10 +198,11 @@ void hazardClassification_func()
             Serial.println("");*/
             break;
         case 2: // Object moving away from sensor
-            // Distance threshold detection
             hapticScore = 0;
-            
-            Serial.println("Object is departing.");
+            Serial.print("Object is departing, hapticScore = ");
+            Serial.print(hapticScore);
+            Serial.print(", vibeState = ");
+            Serial.println(vibeState);
             /*Serial.print(velEst);
             Serial.print("m/s.");
             Serial.println("");*/
@@ -201,20 +211,47 @@ void hazardClassification_func()
             // Distance threshold detection?
             if(newDist > twoStridesAway)
             {
-                hapticScore = 0;
-                Serial.println("Object is more than two strides away and is stationary.");
+              hapticScore = 0;
+              Serial.print("Object is more than two strides away and is stationary, hapticScore = ");
+              Serial.print(hapticScore);
+              Serial.print(", vibeState = ");
+              Serial.print(vibeState);
+              Serial.print(", velocity = ");
+              Serial.print(velEst);
+              Serial.print(", vibeCount = ");
+              Serial.print(vibeCount);
+              Serial.print(", maxVibe = ");
+              Serial.println(maxVibe);
             }
 
             if((newDist < twoStridesAway) && (newDist > oneStrideAway))
             {
-                hapticScore = 6;
-                Serial.println("Object is within two strides and is stationary.");
+              hapticScore = 4;
+              Serial.print("Object is within two strides and is stationary, hapticScore = ");
+              Serial.print(hapticScore);
+              Serial.print(", vibeState = ");
+              Serial.print(vibeState);
+              Serial.print(", velocity = ");
+              Serial.print(velEst);
+              Serial.print(", vibeCount = ");
+              Serial.print(vibeCount);
+              Serial.print(", maxVibe = ");
+              Serial.println(maxVibe);
             }
 
             if(newDist < oneStrideAway)
             {
-                hapticScore = 7;
-                Serial.println("Object is within one stride and is stationary.");
+              hapticScore = 3;
+              Serial.print("Object is within one stride and is stationary, hapticScore = ");
+              Serial.print(hapticScore);
+              Serial.print(", vibeState = ");
+              Serial.print(vibeState);
+              Serial.print(", velocity = ");
+              Serial.print(velEst);
+              Serial.print(", vibeCount = ");
+              Serial.print(vibeCount);
+              Serial.print(", maxVibe = ");
+              Serial.println(maxVibe);
             }
 
             //Serial.println("Object is presumed to be stationary.");
@@ -242,84 +279,93 @@ void impactETA_func()
   }
 }
 
-void hapticFeedbac_func ()
+void hapticFeedback_func ()
 {
-    leftHaptStart = millis();
-    leftHaptSet = map(newDist, 4000, 0, 130, 255);
-    switch(hapticScore)
-    {
-        case 0:
-            //leftHaptSet= 0;
-            leftMaxHapt = 0;
-            leftInteval = 0;
-            leftDwell = 0;
-            break;
-        case 1:
-            //leftHaptSet= 175;
-            leftMaxHapt = 1;
-            leftInteval = 75;
-            leftDwell = 1500;
-            break;
-        case 2:
-            //leftHaptSet= 175;
-            leftMaxHapt = 2;
-            leftInteval = 75;
-            leftDwell = 1000;
-            break;
-        case 3:
-            //leftHaptSet= 175;
-            leftMaxHapt = 3;
-            leftInteval = 75;
-            leftDwell = 750;
-            break;
-        case 4:
-            //leftHaptSet= 200;
-            leftMaxHapt = 5;
-            leftInteval = 20;
-            leftDwell = 500;
-            break;
-        case 5:
-            //leftHaptSet= 175;
-            leftMaxHapt = 1;
-            leftInteval = 75;
-            leftDwell = 1000;
-            break;
-        case 6:
-            leftHaptSet= 120;
-            leftMaxHapt = 2;
-            leftInteval = 50;
-            leftDwell = 1000;
-            break;
-        case 7:
-            leftHaptSet= 100;
-            leftMaxHapt = 1;
-            leftInteval = 75;
-            leftDwell = 1000;
-            break;
-        default:
-            break;
-    }
-     
+  currentMillis = millis();
+  switch(hapticScore)
+  {
+    case 0:
+      vibeSet = 0;
+      maxVibe = 0;
+      interval = 0;
+      dwell = 0;
+      break;
+    case 1: // Moving towards within 1 stride -- medium priority
+      vibeSet = 160;
+      maxVibe = 3;
+      interval = 30;
+      dwell = 500;
+      break;
+    case 2: // Moving towards within 2 strides -- medium priority
+      vibeSet = 125;
+      maxVibe = 3;
+      interval = 50;
+      dwell = 500;
+      break;
+    case 3: // Stationary within one stride -- low priority
+      vibeSet = 160;
+      maxVibe = 1;
+      interval = 75;
+      dwell = 2000;
+      break;
+    case 4: // Stationary within two strides -- low priority
+      vibeSet = 125;
+      maxVibe = 1;
+      interval = 60;
+      dwell = 3000;
+      break;
+    case 5: // Impact possible -- high priority
+      vibeSet = 255;
+      maxVibe = 1;
+      interval = 30;
+      dwell = 60;
+      break;
+    default:
+        break;
+  }
     
-    if (leftHaptStart - prevLeftHaptMillis >= leftInteval && leftHaptCount < leftMaxHapt) // The 'latching on' vibrate bug might lurk here
-    {
-        prevLeftHaptMillis = leftHaptStart;
-        if (leftHaptState == 0)
-        {
-            leftHaptState = leftHaptSet;
-            //leftHaptState = HIGH;
-        }
-        else //Possibly where pin is not set to low on changing hapticScore case?
-        {
-            leftHaptState = 0;
-            //leftHaptState = LOW;
-            leftHaptCount++;
-        }
-    analogWrite(leftHaptPin, leftHaptState); 
-    }
+  if (currentMillis - previousMillis >= interval && vibeCount < maxVibe)
+  {
+      previousMillis = currentMillis;
+      if (vibeState == 0)
+      {
+        vibeState = vibeSet;
+        Serial.print("\t\tVibrate ON, vibeState = ");
+        Serial.print(vibeState);
+        Serial.println("");
+      }
+      else
+      {
+        vibeState = 0;
+        Serial.print("\t\tVibrate OFF, vibeState = ");
+        Serial.print(vibeState);
+        Serial.println("");
+        vibeCount++;
+      }
+  analogWrite(vibePin, vibeState); 
+  }
+  
+  /*if((vibeCount == maxVibe || vibeCount > maxVibe ) && (vibeState > 0))
+  {
+    vibeCount = 0;
+    vibeState = 0;
+    Serial.println("Haptics accidentally on, haptics turned off until next cycle.");
+  }*/
 
-    if(leftHaptStart - prevLeftHaptMillis >= leftDwell)
-    {
-        leftHaptCount = 0;
-    }
+  if(currentMillis - previousMillis >= interval && vibeState > 0)
+  {
+    vibeCount = 0;
+    vibeState = 0;
+    Serial.println("Haptics accidentally on, haptics turned off until next cycle.");
+  }
+
+  if(currentMillis - previousMillis >= dwell)
+  {
+    vibeCount = 0;
+    vibeState = 0;
+    analogWrite(vibePin, vibeState); 
+    Serial.print("\t\tCompleted vibration cycle, vibeState = ");
+    Serial.print(vibeState);
+    Serial.println("~~RESET VIBECOUNT~~");
+  }
 }
