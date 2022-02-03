@@ -73,7 +73,7 @@ void loop()
 
   if (ToF.timeoutOccurred()) 
   { 
-      Serial.print(" Sensor timed out."); 
+    Serial.print(" Sensor timed out."); 
   }
 } //End of 'loop'
 
@@ -326,22 +326,22 @@ void hapticFeedback_func ()
     
   if (currentMillis - previousMillis >= interval && vibeCount < maxVibe)
   {
-      previousMillis = currentMillis;
-      if (vibeState == 0)
-      {
-        vibeState = vibeSet;
-        Serial.print("\t\tVibrate ON, vibeState = ");
-        Serial.print(vibeState);
-        Serial.println("");
-      }
-      else
-      {
-        vibeState = 0;
-        Serial.print("\t\tVibrate OFF, vibeState = ");
-        Serial.print(vibeState);
-        Serial.println("");
-        vibeCount++;
-      }
+    previousMillis = currentMillis;
+    if (vibeState == 0)
+    {
+      vibeState = vibeSet;
+      Serial.print("\t\tVibrate ON, vibeState = ");
+      Serial.print(vibeState);
+      Serial.println("");
+    }
+    else
+    {
+      vibeState = 0;
+      Serial.print("\t\tVibrate OFF, vibeState = ");
+      Serial.print(vibeState);
+      Serial.println("");
+      vibeCount++;
+    }
   analogWrite(vibePin, vibeState); 
   }
   
