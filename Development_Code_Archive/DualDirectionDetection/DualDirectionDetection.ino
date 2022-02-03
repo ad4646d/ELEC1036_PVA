@@ -32,19 +32,25 @@ float rghtVelEst = 0;
 #define XSHUT_LEFT 10
 #define XSHUT_RGHT 9
 
+int objDirectionLeft = 0;
+int objDirectionRght = 0;
+
 //~~Variables for left sensor averaging~~//
 //~~Velocity Averaging~~/
-#define leftVelVals 20
+#define leftVelVals 3
 float leftVelArray[leftVelVals];
 float leftVelAvg = 0;
 byte leftVelLoc;
 
 //~~Variables for right sensor averaging~~//
 //~~Velocity Averaging~~/
-#define rghtVelVals 20
+#define rghtVelVals 3
 float rghtVelArray[rghtVelVals];
 float rghtVelAvg = 0;
 byte rghtVelLoc;
+
+
+
 
 void setup() {
 
@@ -115,29 +121,31 @@ void setup() {
     for (int x = 0; x < rghtVelVals; x++) //empty right vel est array
     {
         rghtVelArray[x] = 0;
-    }       
+    }
 }
 
 void loop() {
     if((millis()- startRead) > readFreq)
     {
+        //~~left sensor
         leftVelEst_func();
         leftVelAvg_func();
-        Serial.print(",");
-        Serial.print(leftVelAvg);
-        Serial.print(",");
+        objLeftDirectionClassification_func();
+        objDirectionLeftPrint_func();
+        //~~right sensor
         rghtVelEst_func();
         rghtVelAvg_func();
-        Serial.print(",");
-        Serial.print(rghtVelAvg);
-        Serial.print(",");
+        objRghtDirectionClassification_func();
+        objDirectionRghtPrint_func();
+               
         
-        startRead = millis();        
-
+        startRead = millis();
     }
-}
+} //End of "loop"
 
-void leftVelEst_func()
+//~~~~~ Left Sensor Functions ~~~~~//
+
+void leftVelEst_func() //Estimating velocity of objects approaching left sensor
 {
     //Left Sensor Read
     newLeftDist = SEN_LEFT.read();
@@ -145,18 +153,16 @@ void leftVelEst_func()
     newLeftTime = millis();
     deltLeftTime = (newLeftTime-prevLeftTime);
     
-    
     deltLeftDist = (prevLeftDist - newLeftDist);
     
     leftVelEst=(deltLeftDist/deltLeftTime);
-    
-    Serial.print(leftVelEst);
+       
     prevLeftDist = newLeftDist;
     prevLeftTime = newLeftTime;
-    Serial.print(",");
+    
 }
 
-void leftVelAvg_func()
+void leftVelAvg_func() //Calculates rolling average for left velocity
 {
     leftVelArray[leftVelLoc] = leftVelEst;
     if (++leftVelLoc == leftVelVals)
@@ -172,7 +178,50 @@ void leftVelAvg_func()
     leftVelAvg /= leftVelVals;
 }
 
-void rghtVelEst_func()
+void objLeftDirectionClassification_func()
+{
+  if (leftVelEst < leftVelAvg && leftVelEst >0.1) // Object is approaching
+  {
+    objDirectionLeft = 1;
+  }
+
+  if (leftVelEst > leftVelAvg && leftVelEst < -0.1) // Object is departing
+  {
+    objDirectionLeft = 2;
+  }
+
+  if (leftVelEst <0.1 && leftVelEst > -0.1) // Object is stationary -- Change to use "avgVelEst" at a later date
+  {
+    objDirectionLeft = 3;
+  }
+}
+
+void objDirectionLeftPrint_func()
+{
+  switch(objDirectionLeft)
+  {
+    case 1:
+      Serial.print("!!Warning!! Object is approaching left at: ");
+      Serial.print(leftVelEst);
+      Serial.print("m/s.");
+      break;
+    case 2:
+      Serial.print("Object is departing left at: ");
+      Serial.print(leftVelEst);
+      Serial.print("m/s.");
+      break;
+    case 3:
+      Serial.print("Object left is presumed to be stationary.");
+      
+      break;
+    default:
+      break;
+  }
+}
+
+//~~~~~ Right Sensor Functions ~~~~~//
+
+void rghtVelEst_func() //Estimating velocity of objects approaching right sensor
 {
     
     //Right Sensor Read
@@ -185,13 +234,11 @@ void rghtVelEst_func()
     
     rghtVelEst=(deltRghtDist/deltRghtTime);
     
-    Serial.print(rghtVelEst);
     prevRghtDist = newRghtDist;
     prevRghtTime = newRghtTime;
-    Serial.println("");
 }
 
-void rghtVelAvg_func()
+void rghtVelAvg_func() //Calculates rolling average for right velocity
 {
     rghtVelArray[rghtVelLoc] = rghtVelEst;
     if (++rghtVelLoc == rghtVelVals)
@@ -206,3 +253,48 @@ void rghtVelAvg_func()
 
     rghtVelAvg /= rghtVelVals;
 }
+
+void objRghtDirectionClassification_func()
+{
+  if (rghtVelEst < rghtVelAvg && rghtVelEst >0.1) // Object is approaching
+  {
+    objDirectionRght = 1;
+  }
+
+  if (rghtVelEst > rghtVelAvg && rghtVelEst < -0.1) // Object is departing
+  {
+    objDirectionRght = 2;
+  }
+
+  if (rghtVelEst <0.1 && rghtVelEst > -0.1) // Object is stationary -- Change to use "avgVelEst" at a later date
+  {
+    objDirectionRght = 3;
+  }
+}
+
+void objDirectionRghtPrint_func()
+{
+  switch(objDirectionRght)
+  {
+    case 1:
+      Serial.print("\t\t!!Warning!! Object is approaching right at: ");
+      Serial.print(rghtVelEst);
+      Serial.print("m/s.");
+      Serial.println("");
+      break;
+    case 2:
+      Serial.print("\t\tObject is departing right at: ");
+      Serial.print(rghtVelEst);
+      Serial.print("m/s.");
+      Serial.println("");
+      break;
+    case 3:
+      Serial.print("\t\tObject right is presumed to be stationary.");
+      Serial.println("");
+      break;
+    default:
+      break;
+  }
+}
+
+
