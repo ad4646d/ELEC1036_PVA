@@ -7,11 +7,13 @@
   --------------------------------------------------------------
   **************************************************************
   --------------------------------------------------------------
-  Revision: V1.1
+  Revision: V1.2
   --------------------------------------------------------------
   Revision History:
   V1 - Initial release
   V1.1 - Housekeeping ~~ Fixing indents
+  V1.2 - Housekeeping ~~ Creating common variables for distance
+                         thresholds
   --------------------------------------------------------------
 */
 
@@ -53,11 +55,8 @@ float deltRghtDist = 0;
 float rghtVelEst = 0;
 
 //~~Distance Thresholds~~//
-int leftTwoStridesAway = 500;
-int leftOneStrideAway = 250;
-
-int rghtTwoStridesAway = 500;
-int rghtOneStrideAway = 250;
+int twoStridesAway = 2100;
+int oneStrideAway = 1060;
 
 //~~Object Direction and Impact Warning Variables~~//
 int objDirectionLeft = 0;
@@ -192,7 +191,7 @@ void loop()
     leftImpactETA_func();
     leftHazardClassification_func();
     leftHapticFeedback_func();
-    //objDirectionLeftPrint_func();
+    
     //~~right sensor
     rghtVelEst_func();
     rghtVelAvg_func();
@@ -200,7 +199,7 @@ void loop()
     rghtImpactETA_func();
     rghtHazardClassification_func();
     rghtHapticFeedback_func();
-    //objDirectionRghtPrint_func();
+    
 
     startRead = millis();
   }
@@ -298,7 +297,7 @@ void leftHazardClassification_func()
       {
         case 1: // Object moving towards sensor
           // Distance threshold detection
-          if(newLeftDist > leftTwoStridesAway)
+          if(newLeftDist > twoStridesAway)
           {
             leftHazardScore = 0;
             if(serialDebugPrint == true)
@@ -310,7 +309,7 @@ void leftHazardClassification_func()
             }
           }
 
-          if((newLeftDist < leftTwoStridesAway) && (newLeftDist > leftOneStrideAway))
+          if((newLeftDist < twoStridesAway) && (newLeftDist > oneStrideAway))
           {
             leftHazardScore = 2;
             if(serialDebugPrint == true)
@@ -322,7 +321,7 @@ void leftHazardClassification_func()
             }
           }
 
-          if(newLeftDist < leftOneStrideAway)
+          if(newLeftDist < oneStrideAway)
           {
             leftHazardScore = 1;
             if(serialDebugPrint == true)
@@ -349,7 +348,7 @@ void leftHazardClassification_func()
           break;
         case 3: // Object probably stationary
           // Distance threshold detection?
-          if(newLeftDist > leftTwoStridesAway)
+          if(newLeftDist > twoStridesAway)
           {
             leftHazardScore = 0;
             if(serialDebugPrint == true)
@@ -367,7 +366,7 @@ void leftHazardClassification_func()
             }
           }
 
-          if((newLeftDist < leftTwoStridesAway) && (newLeftDist > leftOneStrideAway))
+          if((newLeftDist < twoStridesAway) && (newLeftDist > oneStrideAway))
           {
             leftHazardScore = 4;
             if(serialDebugPrint == true)
@@ -385,7 +384,7 @@ void leftHazardClassification_func()
             }
           }
 
-          if(newLeftDist < leftOneStrideAway)
+          if(newLeftDist < oneStrideAway)
           {
             leftHazardScore = 3;
             if(serialDebugPrint == true)
@@ -626,7 +625,7 @@ void rghtHazardClassification_func()
       {
         case 1: // Object moving towards sensor
           // Distance threshold detection
-          if(newRghtDist > rghtTwoStridesAway)
+          if(newRghtDist > twoStridesAway)
           {
             rghtHazardScore = 0;
             if(serialDebugPrint == true)
@@ -638,7 +637,7 @@ void rghtHazardClassification_func()
             }
           }
 
-          if((newRghtDist < rghtTwoStridesAway) && (newRghtDist > rghtOneStrideAway))
+          if((newRghtDist < twoStridesAway) && (newRghtDist > oneStrideAway))
           {
             rghtHazardScore = 2;
             if(serialDebugPrint == true)
@@ -650,7 +649,7 @@ void rghtHazardClassification_func()
             }
           }
 
-          if(newRghtDist < rghtOneStrideAway)
+          if(newRghtDist < oneStrideAway)
           {
             rghtHazardScore = 1;
             if(serialDebugPrint == true)
@@ -677,7 +676,7 @@ void rghtHazardClassification_func()
           break;
         case 3: // Object probably stationary
           // Distance threshold detection?
-          if(newRghtDist > rghtTwoStridesAway)
+          if(newRghtDist > twoStridesAway)
           {
             rghtHazardScore = 0;
             if(serialDebugPrint == true)
@@ -695,7 +694,7 @@ void rghtHazardClassification_func()
             }
           }
 
-          if((newRghtDist < rghtTwoStridesAway) && (newRghtDist > rghtOneStrideAway))
+          if((newRghtDist < twoStridesAway) && (newRghtDist > oneStrideAway))
           {
             rghtHazardScore = 4;
             if(serialDebugPrint == true)
@@ -713,7 +712,7 @@ void rghtHazardClassification_func()
             }
           }
 
-          if(newRghtDist < rghtOneStrideAway)
+          if(newRghtDist < oneStrideAway)
           {
             rghtHazardScore = 3;
             if(serialDebugPrint == true)
