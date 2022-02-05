@@ -29,8 +29,8 @@ float prevRghtDist = 0;
 float deltRghtDist = 0;
 float rghtVelEst = 0;
 
-#define XSHUT_LEFT 10
-#define XSHUT_RGHT 9
+#define XSHUT_LEFT 2
+#define XSHUT_RGHT 4
 
 //~~Variables for left sensor averaging~~//
 //~~Velocity Averaging~~/
@@ -146,27 +146,34 @@ void loop() {
     {
         //~~left sensor
         leftVelEst_func();
-        leftVelEst_comma_print();
-        //leftVelEst_verbose_print();
-        leftVelAvg_func();
-        leftDistAvg_func();
-        leftVelAvg_comma_print();
-        //leftVelAvg_verbose_print();
-        //leftDist_comma_print();
-        //leftDistAvg_comma_print();
-        //leftDistAvg_verbose_print();
+        if(newLeftDist < 2100)
+        {
+            leftVelEst_comma_print();
+            //leftVelEst_verbose_print();
+            leftVelAvg_func();
+            leftDistAvg_func();
+            leftVelAvg_comma_print();
+            //leftVelAvg_verbose_print();
+            //leftDist_comma_print();
+            //leftDistAvg_comma_print();
+            //leftDistAvg_verbose_print();
+        }
         
         //~~right sensor
         rghtVelEst_func();
-        rghtVelEst_comma_print();
-        //rghtVelEst_verbose_print();
-        rghtVelAvg_func();
-        rghtDistAvg_func();
-        rghtVelAvg_comma_print();
-        //rghtVelAvg_verbose_print();
-        //rghtDist_comma_print();
-        //rghtDistAvg_comma_print();
-        //rghtDistAvg_verbose_print();
+        if(newRghtDist < 2100)
+        {
+            rghtVelEst_comma_print();
+            //rghtVelEst_verbose_print();
+            rghtVelAvg_func();
+            rghtDistAvg_func();
+            rghtVelAvg_comma_print();
+            //rghtVelAvg_verbose_print();
+            //rghtDist_comma_print();
+            //rghtDistAvg_comma_print();
+            //rghtDistAvg_verbose_print();
+        }
+        
         Serial.println("");        
         
         startRead = millis();        
