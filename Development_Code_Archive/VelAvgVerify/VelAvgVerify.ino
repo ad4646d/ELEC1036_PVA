@@ -37,7 +37,7 @@ void setup()
   
   for (int x = 0; x < HISTORY_SIZE; x++)
   {
-      history[x] = 0;
+    history[x] = 0;
   }
 }
 
