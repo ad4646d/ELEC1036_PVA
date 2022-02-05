@@ -29,8 +29,8 @@ float prevRghtDist = 0;
 float deltRghtDist = 0;
 float rghtVelEst = 0;
 
-#define XSHUT_LEFT 10
-#define XSHUT_RGHT 9
+#define XSHUT_LEFT 2
+#define XSHUT_RGHT 4
 
 int objDirectionLeft = 0;
 int objDirectionRght = 0;
