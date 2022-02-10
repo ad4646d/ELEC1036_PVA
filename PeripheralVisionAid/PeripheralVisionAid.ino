@@ -11,9 +11,17 @@
   --------------------------------------------------------------
   Revision History:
   V1 - Initial release
+  
   V1.1 - Housekeeping ~~ Fixing indents
+  
   V1.2 - Housekeeping ~~ Creating common variables for distance
                          thresholds
+ 
+  V1.3 - Enhancement  ~~ Changed haptics function to drive PWM 
+                         proportionally to sensed distance, 
+                         added a duty cycle for 1 step and 
+                         2 step distance thresholds
+
   --------------------------------------------------------------
 */
 
@@ -79,12 +87,6 @@ int rghtHapticState = 0;
 int leftHapticSet = 0; //previously vibeSet
 int rghtHapticSet = 0;
 
-int leftMaxHaptic = 0; //previously maxVibe
-int rghtMaxHaptic = 0;
-
-int leftHapticCount = 0; //previously vibeCount
-int rghtHapticCount = 0;
-
 unsigned long leftHapticTimerStart = 0; //previously currentMillis
 unsigned long rghtHapticTimerStart = 0;
 
@@ -93,9 +95,6 @@ unsigned long rghtHapticTimerEnd = 0;
 
 long leftHapticInterval = 0; //previously interval
 long rghtHapticInterval = 0;
-
-long leftDwell = 0; //previously dwell
-long rghtDwell = 0;
 
 //~~Velocity Averaging~~/
 #define leftVelVals 3
@@ -245,38 +244,32 @@ void objLeftDirectionClassification_func()
   if (leftVelEst < leftVelAvg && leftVelEst >0.1) // Object is approaching
   {
     objDirectionLeft = 1;
+    if(serialDebugPrint == true)
+    {
+      Serial.print("!!Warning!! Object is approaching left at: ");
+      Serial.print(leftVelEst);
+      Serial.print("m/s.");
+    }
   }
 
   if (leftVelEst > leftVelAvg && leftVelEst < -0.1) // Object is departing
   {
     objDirectionLeft = 2;
+    if(serialDebugPrint == true)
+    {
+      Serial.print("Object is departing left at: ");
+      Serial.print(leftVelEst);
+      Serial.print("m/s.");
+    }
   }
 
   if (leftVelEst < 0.1 && leftVelEst > -0.1) // Object is stationary -- Change to use "avgVelEst" at a later date
   {
     objDirectionLeft = 3;
-  }
-}
-
-void objDirectionLeftPrint_func()
-{
-  switch(objDirectionLeft)
-  {
-    case 1:
-      Serial.print("!!Warning!! Object is approaching left at: ");
-      Serial.print(leftVelEst);
-      Serial.print("m/s.");
-      break;
-    case 2:
-      Serial.print("Object is departing left at: ");
-      Serial.print(leftVelEst);
-      Serial.print("m/s.");
-      break;
-    case 3:
+    if(serialDebugPrint == true)
+    {
       Serial.print("Object left is presumed to be stationary.");
-      break;
-    default:
-      break;
+    }
   }
 }
 
@@ -359,10 +352,6 @@ void leftHazardClassification_func()
               Serial.print(leftHapticState);
               Serial.print(", velocity = ");
               Serial.print(leftVelEst);
-              Serial.print(", leftHapticCount = ");
-              Serial.print(leftHapticCount);
-              Serial.print(", leftMaxHaptic = ");
-              Serial.println(leftMaxHaptic);
             }
           }
 
@@ -377,10 +366,6 @@ void leftHazardClassification_func()
               Serial.print(leftHapticState);
               Serial.print(", velocity = ");
               Serial.print(leftVelEst);
-              Serial.print(", leftHapticCount = ");
-              Serial.print(leftHapticCount);
-              Serial.print(", leftMaxHaptic = ");
-              Serial.println(leftMaxHaptic);
             }
           }
 
@@ -395,10 +380,6 @@ void leftHazardClassification_func()
               Serial.print(leftHapticState);
               Serial.print(", velocity = ");
               Serial.print(leftVelEst);
-              Serial.print(", leftHapticCount = ");
-              Serial.print(leftHapticCount);
-              Serial.print(", leftMaxHaptic = ");
-              Serial.println(leftMaxHaptic);
             }
           }
           if(serialDebugPrint == true)
@@ -431,49 +412,38 @@ void leftImpactETA_func()
 void leftHapticFeedback_func ()
 {
   leftHapticTimerStart = millis();
+  
   switch(leftHazardScore)
   {
     case 0:
       leftHapticSet = 0;
-      leftMaxHaptic = 0;
       leftHapticInterval = 0;
-      leftDwell = 0;
       break;
     case 1: // Moving towards within 1 stride -- medium priority
-      leftHapticSet = 160;
-      leftMaxHaptic = 3;
-      leftHapticInterval = 30;
-      leftDwell = 500;
+      leftHapticSet = map(newLeftDist, twoStridesAway, 10, 55, 255);
+      leftHapticInterval = 25;
       break;
     case 2: // Moving towards within 2 strides -- medium priority
-      leftHapticSet = 125;
-      leftMaxHaptic = 3;
+      leftHapticSet = map(newLeftDist, twoStridesAway, 10, 55, 255);
       leftHapticInterval = 50;
-      leftDwell = 500;
       break;
     case 3: // Stationary within one stride -- low priority
-      leftHapticSet = 160;
-      leftMaxHaptic = 1;
+      leftHapticSet = 0;
       leftHapticInterval = 75;
-      leftDwell = 2000;
       break;
     case 4: // Stationary within two strides -- low priority
-      leftHapticSet = 125;
-      leftMaxHaptic = 1;
+      leftHapticSet = 0;
       leftHapticInterval = 60;
-      leftDwell = 3000;
       break;
     case 5: // Impact possible -- high priority
       leftHapticSet = 255;
-      leftMaxHaptic = 1;
-      leftHapticInterval = 30;
-      leftDwell = 60;
+      leftHapticInterval = 10;
       break;
     default:
       break;
   }
     
-  if (leftHapticTimerStart - leftHapticTimerEnd >= leftHapticInterval && leftHapticCount < leftMaxHaptic)
+  if (leftHapticTimerStart - leftHapticTimerEnd >= leftHapticInterval)
   {
     leftHapticTimerEnd = leftHapticTimerStart;
     if (leftHapticState == 0)
@@ -489,7 +459,6 @@ void leftHapticFeedback_func ()
     else
     {
       leftHapticState = 0;
-      leftHapticCount++;
       if(serialDebugPrint == true)
       {
         Serial.print("\t\tVibrate OFF, leftHapticState = ");
@@ -497,38 +466,7 @@ void leftHapticFeedback_func ()
         Serial.println("");
       }
     }
-  analogWrite(leftHapticPin, leftHapticState); 
-  }
-  
-  /*if((leftHapticCount == leftMaxHaptic || leftHapticCount > leftMaxHaptic ) && (leftHapticState > 0))
-  {
-    leftHapticCount = 0;
-    leftHapticState = 0;
-    Serial.println("Haptics accidentally on, haptics turned off until next cycle.");
-  }*/
-
-  if(leftHapticTimerStart - leftHapticTimerEnd >= leftHapticInterval && leftHapticState > 0)
-  {
-    leftHapticCount = 0;
-    leftHapticState = 0;
     analogWrite(leftHapticPin, leftHapticState); 
-    if(serialDebugPrint == true)
-    {
-      Serial.println("Haptics accidentally on, haptics turned off until next cycle.");
-    }
-  }
-
-  if(leftHapticTimerStart - leftHapticTimerEnd >= leftDwell)
-  {
-    leftHapticCount = 0;
-    leftHapticState = 0;
-    analogWrite(leftHapticPin, leftHapticState);
-    if(serialDebugPrint == true)
-    {
-      Serial.print("\t\tCompleted vibration cycle, leftHapticState = ");
-      Serial.print(leftHapticState);
-      Serial.println("~~RESET LEFT VIBECOUNT~~");
-    } 
   }
 }
 
@@ -571,41 +509,35 @@ void objRghtDirectionClassification_func()
   if (rghtVelEst < rghtVelAvg && rghtVelEst >0.1) // Object is approaching
   {
     objDirectionRght = 1;
+    if(serialDebugPrint == true)
+    {
+      Serial.print("\t\t!!Warning!! Object is approaching right at: ");
+      Serial.print(rghtVelEst);
+      Serial.print("m/s.");
+      Serial.println("");
+    }
   }
 
   if (rghtVelEst > rghtVelAvg && rghtVelEst < -0.1) // Object is departing
   {
     objDirectionRght = 2;
+    if(serialDebugPrint == true)
+    {
+      Serial.print("\t\tObject is departing right at: ");
+      Serial.print(rghtVelEst);
+      Serial.print("m/s.");
+      Serial.println("");
+    }
   }
 
   if (rghtVelEst <0.1 && rghtVelEst > -0.1) // Object is stationary -- Change to use "avgVelEst" at a later date
   {
     objDirectionRght = 3;
-  }
-}
-
-void objDirectionRghtPrint_func()
-{
-  switch(objDirectionRght)
-  {
-    case 1:
-      Serial.print("\t\t!!Warning!! Object is approaching right at: ");
-      Serial.print(rghtVelEst);
-      Serial.print("m/s.");
-      Serial.println("");
-      break;
-    case 2:
-      Serial.print("\t\tObject is departing right at: ");
-      Serial.print(rghtVelEst);
-      Serial.print("m/s.");
-      Serial.println("");
-      break;
-    case 3:
+    if(serialDebugPrint == true)
+    {
       Serial.print("\t\tObject right is presumed to be stationary.");
       Serial.println("");
-      break;
-    default:
-      break;
+    }
   }
 }
 
@@ -687,10 +619,6 @@ void rghtHazardClassification_func()
               Serial.print(rghtHapticState);
               Serial.print(", velocity = ");
               Serial.print(rghtVelEst);
-              Serial.print(", rghtHapticCount = ");
-              Serial.print(rghtHapticCount);
-              Serial.print(", rghtMaxHaptic = ");
-              Serial.println(rghtMaxHaptic);
             }
           }
 
@@ -705,10 +633,6 @@ void rghtHazardClassification_func()
               Serial.print(rghtHapticState);
               Serial.print(", velocity = ");
               Serial.print(rghtVelEst);
-              Serial.print(", rghtHapticCount = ");
-              Serial.print(rghtHapticCount);
-              Serial.print(", rghtMaxHaptic = ");
-              Serial.println(rghtMaxHaptic);
             }
           }
 
@@ -723,10 +647,6 @@ void rghtHazardClassification_func()
               Serial.print(rghtHapticState);
               Serial.print(", velocity = ");
               Serial.print(rghtVelEst);
-              Serial.print(", rghtHapticCount = ");
-              Serial.print(rghtHapticCount);
-              Serial.print(", rghtMaxHaptic = ");
-              Serial.println(rghtMaxHaptic);
             }
           }
           if(serialDebugPrint == true)
@@ -759,49 +679,38 @@ void rghtImpactETA_func()
 void rghtHapticFeedback_func ()
 {
   rghtHapticTimerStart = millis();
+  
   switch(rghtHazardScore)
   {
     case 0:
       rghtHapticSet = 0;
-      rghtMaxHaptic = 0;
       rghtHapticInterval = 0;
-      rghtDwell = 0;
       break;
     case 1: // Moving towards within 1 stride -- medium priority
-      rghtHapticSet = 160;
-      rghtMaxHaptic = 3;
-      rghtHapticInterval = 30;
-      rghtDwell = 500;
+      rghtHapticInterval = 25; //Duty cycle
+      rghtHapticSet = map(newRghtDist, twoStridesAway, 10, 55, 255);
       break;
     case 2: // Moving towards within 2 strides -- medium priority
-      rghtHapticSet = 125;
-      rghtMaxHaptic = 3;
       rghtHapticInterval = 50;
-      rghtDwell = 500;
+      rghtHapticSet = map(newRghtDist, twoStridesAway, 10, 55, 255);
       break;
     case 3: // Stationary within one stride -- low priority
-      rghtHapticSet = 160;
-      rghtMaxHaptic = 1;
+      rghtHapticSet = 0;
       rghtHapticInterval = 75;
-      rghtDwell = 2000;
       break;
     case 4: // Stationary within two strides -- low priority
-      rghtHapticSet = 125;
-      rghtMaxHaptic = 1;
+      rghtHapticSet = 0;
       rghtHapticInterval = 60;
-      rghtDwell = 3000;
       break;
     case 5: // Impact possible -- high priority
       rghtHapticSet = 255;
-      rghtMaxHaptic = 1;
-      rghtHapticInterval = 30;
-      rghtDwell = 60;
+      rghtHapticInterval = 10;
       break;
     default:
       break;
   }
     
-  if (rghtHapticTimerStart - rghtHapticTimerEnd >= rghtHapticInterval && rghtHapticCount < rghtMaxHaptic)
+  if (rghtHapticTimerStart - rghtHapticTimerEnd >= rghtHapticInterval)
   {
     rghtHapticTimerEnd = rghtHapticTimerStart;
     if (rghtHapticState == 0)
@@ -817,7 +726,6 @@ void rghtHapticFeedback_func ()
     else
     {
       rghtHapticState = 0;
-      rghtHapticCount++;
       if(serialDebugPrint == true)
       {
         Serial.print("\t\tVibrate OFF, rghtHapticState = ");
@@ -826,36 +734,5 @@ void rghtHapticFeedback_func ()
       }
     }
   analogWrite(rghtHapticPin, rghtHapticState); 
-  }
-  
-  /*if((rghtHapticCount == rghtMaxHaptic || rghtHapticCount > rghtMaxHaptic ) && (rghtHapticState > 0))
-  {
-    rghtHapticCount = 0;
-    rghtHapticState = 0;
-    Serial.println("Haptics accidentally on, haptics turned off until next cycle.");
-  }*/
-
-  if(rghtHapticTimerStart - rghtHapticTimerEnd >= rghtHapticInterval && rghtHapticState > 0)
-  {
-    rghtHapticCount = 0;
-    rghtHapticState = 0;
-    analogWrite(rghtHapticPin, rghtHapticState); 
-    if(serialDebugPrint == true)
-    {
-      Serial.println("Haptics accidentally on, haptics turned off until next cycle.");
-    }
-  }
-
-  if(rghtHapticTimerStart - rghtHapticTimerEnd >= rghtDwell)
-  {
-    rghtHapticCount = 0;
-    rghtHapticState = 0;
-    analogWrite(rghtHapticPin, rghtHapticState);
-    if(serialDebugPrint == true)
-    {
-      Serial.print("\t\tCompleted vibration cycle, rghtHapticState = ");
-      Serial.print(rghtHapticState);
-      Serial.println("~~RESET RGHT VIBECOUNT~~");
-    } 
   }
 }
