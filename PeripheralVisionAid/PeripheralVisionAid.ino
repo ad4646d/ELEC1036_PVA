@@ -169,7 +169,16 @@ void setup()
     SEN_RGHT.setDistanceMode(VL53L1X::Long); 
     SEN_RGHT.setMeasurementTimingBudget(50000); 
     SEN_RGHT.startContinuous(50); 
-  } 
+  }
+
+  if(serialDebugPrint == true) 
+  {
+    Serial.print("I2C address for left sensor is: ");
+    Serial.print(SEN_LEFT.getAddress());
+    Serial.println("I2C address for right sensor is: ");
+    Serial.print(SEN_RGHT.getAddress());
+    Serial.println("_________________---____________")
+  }
 
   for (int x = 0; x < leftVelVals; x++) //empty left vel est array
   {
