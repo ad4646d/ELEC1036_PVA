@@ -7,7 +7,7 @@
   --------------------------------------------------------------
   **************************************************************
   --------------------------------------------------------------
-  Revision: V1.3
+  Revision: V1.4
   --------------------------------------------------------------
   Revision History:
   V1 - Initial release
@@ -21,7 +21,10 @@
                          proportionally to sensed distance, 
                          added a duty cycle for 1 step and 
                          2 step distance thresholds
-
+  
+  V1.4 - Modification ~~ Commented out 'ImpactETA' func as 
+                         it is no longer required
+  
   --------------------------------------------------------------
 */
 
@@ -187,7 +190,7 @@ void loop()
     leftVelEst_func();
     leftVelAvg_func();
     objLeftDirectionClassification_func();
-    leftImpactETA_func();
+    //leftImpactETA_func();
     leftHazardClassification_func();
     leftHapticFeedback_func();
     
@@ -195,7 +198,7 @@ void loop()
     rghtVelEst_func();
     rghtVelAvg_func();
     objRghtDirectionClassification_func();
-    rghtImpactETA_func();
+    //rghtImpactETA_func();
     rghtHazardClassification_func();
     rghtHapticFeedback_func();
     
@@ -275,7 +278,7 @@ void objLeftDirectionClassification_func()
 
 void leftHazardClassification_func()
 {
-  switch(leftImpendingImpact)
+  /*switch(leftImpendingImpact)
   {
     case 1:
       if(serialDebugPrint == true)
@@ -285,7 +288,7 @@ void leftHazardClassification_func()
       
       leftHazardScore = 5;
       break;
-    case 2:
+    case 2:*/
       switch(objDirectionLeft)
       {
         case 1: // Object moving towards sensor
@@ -390,10 +393,10 @@ void leftHazardClassification_func()
         default:
           break;
       }
-      break;
+  /*    break;
     default:
       break;      
-  }
+  }*/
 }
 
 void leftImpactETA_func()
@@ -543,7 +546,7 @@ void objRghtDirectionClassification_func()
 
 void rghtHazardClassification_func()
 {
-  switch(rghtImpendingImpact)
+  /*switch(rghtImpendingImpact)
   {
     case 1:
       if(serialDebugPrint == true)
@@ -552,7 +555,7 @@ void rghtHazardClassification_func()
       }
       rghtHazardScore = 5;
       break;
-    case 2:
+    case 2:*/
       switch(objDirectionRght)
       {
         case 1: // Object moving towards sensor
@@ -657,10 +660,10 @@ void rghtHazardClassification_func()
         default:
           break;
       }
-      break;
+  /*    break;
     default:
       break;      
-  }
+  }*/
 }
 
 void rghtImpactETA_func()
