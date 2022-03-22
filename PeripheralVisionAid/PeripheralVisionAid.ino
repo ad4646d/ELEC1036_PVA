@@ -177,7 +177,7 @@ void setup()
     Serial.print(SEN_LEFT.getAddress());
     Serial.println("I2C address for right sensor is: ");
     Serial.print(SEN_RGHT.getAddress());
-    Serial.println("_________________---____________")
+    Serial.println("_________________---____________");
   }
 
   for (int x = 0; x < leftVelVals; x++) //empty left vel est array
