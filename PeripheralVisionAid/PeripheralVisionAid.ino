@@ -7,7 +7,7 @@
   --------------------------------------------------------------
   **************************************************************
   --------------------------------------------------------------
-  Revision: V1.4
+  Revision: V1.6
   --------------------------------------------------------------
   Revision History:
   V1 - Initial release
@@ -24,6 +24,14 @@
   
   V1.4 - Modification ~~ Commented out 'ImpactETA' func as 
                          it is no longer required
+  
+  V1.5 - Modification ~~ Added serial debugging commands to
+                         check that I2C addresses have been set
+  
+  V1.6 - Modification ~~ Added '<sensor>.dataReady()' library
+                         reference to velocity estimate funcs
+                         to ensure latest distance is requested
+                         from sensor when it is ready
   
   --------------------------------------------------------------
 */
@@ -193,27 +201,21 @@ void setup()
 
 void loop() 
 {
-  if((millis()- startRead) > readFreq)
-  {
-    //~~left sensor
-    leftVelEst_func();
-    leftVelAvg_func();
-    objLeftDirectionClassification_func();
-    //leftImpactETA_func();
-    leftHazardClassification_func();
-    leftHapticFeedback_func();
-    
-    //~~right sensor
-    rghtVelEst_func();
-    rghtVelAvg_func();
-    objRghtDirectionClassification_func();
-    //rghtImpactETA_func();
-    rghtHazardClassification_func();
-    rghtHapticFeedback_func();
-    
-
-    startRead = millis();
-  }
+  //~~left sensor
+  leftVelEst_func();
+  leftVelAvg_func();
+  objLeftDirectionClassification_func();
+  //leftImpactETA_func();
+  leftHazardClassification_func();
+  leftHapticFeedback_func();
+  
+  //~~right sensor
+  rghtVelEst_func();
+  rghtVelAvg_func();
+  objRghtDirectionClassification_func();
+  //rghtImpactETA_func();
+  rghtHazardClassification_func();
+  rghtHapticFeedback_func();
 } //End of "loop"
 
 //~~~~~ Left Sensor Functions ~~~~~//
@@ -221,18 +223,20 @@ void loop()
 void leftVelEst_func() //Estimating velocity of objects approaching left sensor
 {
   //Left Sensor Read
-  newLeftDist = SEN_LEFT.read();
+  if(SEN_LEFT.dataReady() == true) //Will only run if left sensor has data ready
+  {
+   newLeftDist = SEN_LEFT.read();
   
-  newLeftTime = millis();
-  deltLeftTime = (newLeftTime-prevLeftTime);
-  
-  deltLeftDist = (prevLeftDist - newLeftDist);
-  
-  leftVelEst=(deltLeftDist/deltLeftTime);
-      
-  prevLeftDist = newLeftDist;
-  prevLeftTime = newLeftTime;
+    newLeftTime = millis();
+    deltLeftTime = (newLeftTime-prevLeftTime);
     
+    deltLeftDist = (prevLeftDist - newLeftDist);
+    
+    leftVelEst=(deltLeftDist/deltLeftTime);
+        
+    prevLeftDist = newLeftDist;
+    prevLeftTime = newLeftTime; 
+  }
 }
 
 void leftVelAvg_func() //Calculates rolling average for left velocity
@@ -487,17 +491,20 @@ void leftHapticFeedback_func ()
 void rghtVelEst_func() //Estimating velocity of objects approaching right sensor
 {
   //Right Sensor Read
-  newRghtDist = SEN_RGHT.read();
-  
-  newRghtTime = millis();
-  deltRghtTime = (newRghtTime-prevRghtTime);
-  
-  deltRghtDist = (prevRghtDist - newRghtDist);
-  
-  rghtVelEst=(deltRghtDist/deltRghtTime);
-  
-  prevRghtDist = newRghtDist;
-  prevRghtTime = newRghtTime;
+  if(SEN_RGHT.dataReady() == true) //Will only run if right sensor has data ready
+  {
+    newRghtDist = SEN_RGHT.read();
+    
+    newRghtTime = millis();
+    deltRghtTime = (newRghtTime-prevRghtTime);
+    
+    deltRghtDist = (prevRghtDist - newRghtDist);
+    
+    rghtVelEst=(deltRghtDist/deltRghtTime);
+    
+    prevRghtDist = newRghtDist;
+    prevRghtTime = newRghtTime;
+  }
 }
 
 void rghtVelAvg_func() //Calculates rolling average for right velocity
