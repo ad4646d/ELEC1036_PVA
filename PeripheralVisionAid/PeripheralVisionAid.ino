@@ -152,7 +152,7 @@ void setup()
   else
   {
     SEN_LEFT.setAddress(50); //Set the I2C address for left sensor
-    SEN_LEFT.setDistanceMode(VL53L1X::Long); //Configures the maximum range, arguments are: short, medium, long
+    SEN_LEFT.setDistanceMode(VL53L1X::Medium); //Configures the maximum range, arguments are: short, medium, long
     SEN_LEFT.setMeasurementTimingBudget(50000); //Configures the maximum allowed time (uS) to make a single distance measurement, longer times = higher accuracy
     SEN_LEFT.startContinuous(50); //Sets the sensor to read continuously 
   }   
@@ -174,7 +174,7 @@ void setup()
   else
   {
     SEN_RGHT.setAddress(45); 
-    SEN_RGHT.setDistanceMode(VL53L1X::Long); 
+    SEN_RGHT.setDistanceMode(VL53L1X::Medium); 
     SEN_RGHT.setMeasurementTimingBudget(50000); 
     SEN_RGHT.startContinuous(50); 
   }
