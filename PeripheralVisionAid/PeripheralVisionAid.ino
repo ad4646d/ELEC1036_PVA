@@ -7,7 +7,7 @@
   --------------------------------------------------------------
   **************************************************************
   --------------------------------------------------------------
-  Revision: V1.6
+  Revision: V1.7
   --------------------------------------------------------------
   Revision History:
   V1 - Initial release
@@ -33,6 +33,9 @@
                          to ensure latest distance is requested
                          from sensor when it is ready
   
+  V1.7 - Modification ~~ Improved serial debug printout for 
+                         testing purposes and general tidying of
+                         code  
   --------------------------------------------------------------
 */
 
@@ -42,7 +45,7 @@
 VL53L1X SEN_LEFT; //Create an object for left sensor 
 VL53L1X SEN_RGHT; //Create an object for right sensor
 
-bool serialDebugPrint = false;
+bool serialDebugPrint = true;
 
 //~~Pin Declarations~~//
 #define XSHUT_LEFT 2 //Enable pin for left sensor
@@ -50,11 +53,6 @@ bool serialDebugPrint = false;
 
 const int leftHaptPin = 3; //PWM pin controlling left vibrate motor
 const int rghtHaptPin = 5; //PWM pin controlling right vibrate motor
-
-//~~~~~~~MIGHT BE REMOVED~~~~~~~~~//
-int readFreq = 50; // Used to determine how frequently readings are taken from the sensors in ms, cannot be less than the timing budget
-int startRead = millis(); //Used for timing loop
-////~~~~~~~MIGHT BE REMOVED~~~~~~~~~//
 
 //~~Velocity Estimation Variables~~//
 long newLeftTime = 0;
@@ -205,7 +203,6 @@ void loop()
   leftVelEst_func();
   leftVelAvg_func();
   objLeftDirectionClassification_func();
-  //leftImpactETA_func();
   leftHazardClassification_func();
   leftHapticFeedback_func();
   
@@ -213,7 +210,6 @@ void loop()
   rghtVelEst_func();
   rghtVelAvg_func();
   objRghtDirectionClassification_func();
-  //rghtImpactETA_func();
   rghtHazardClassification_func();
   rghtHapticFeedback_func();
 } //End of "loop"
@@ -260,168 +256,104 @@ void objLeftDirectionClassification_func() //Deduces the direction of motion of 
   if (leftVelEst < leftVelAvg && leftVelEst >0.1) // Object is approaching
   {
     objDirectionLeft = 1;
-    if(serialDebugPrint == true)
+    /*if(serialDebugPrint == true)
     {
       Serial.print("!!Warning!! Object is approaching left at: ");
       Serial.print(leftVelEst);
       Serial.print("m/s.");
-    }
+    }*/
   }
 
   if (leftVelEst > leftVelAvg && leftVelEst < -0.1) // Object is departing
   {
     objDirectionLeft = 2;
-    if(serialDebugPrint == true)
+    /*if(serialDebugPrint == true)
     {
       Serial.print("Object is departing left at: ");
       Serial.print(leftVelEst);
       Serial.print("m/s.");
-    }
+    }*/
   }
 
   if (leftVelEst < 0.1 && leftVelEst > -0.1) // Object is stationary -- Change to use "avgVelEst" at a later date
   {
     objDirectionLeft = 3;
-    if(serialDebugPrint == true)
+    /*if(serialDebugPrint == true)
     {
       Serial.print("Object left is presumed to be stationary.");
-    }
+    }*/
   }
 }
 
 void leftHazardClassification_func() //Main hazard classification function
 {
-  /*switch(leftImpendingImpact)
+  switch(objDirectionLeft)
   {
-    case 1:
+    case 1: // Object moving towards sensor
+      // Distance threshold detection
+      if(newLeftDist > twoStridesAway)
+      {
+        leftHazardScore = 0;
+        if(serialDebugPrint == true)
+        {
+          Serial.print("| Left Sensor | ");
+          Serial.print("Direction: Approaching - Distance: ");
+          Serial.print(newLeftDist);
+          Serial.print("mm - Object ignored.");
+        }
+      }
+      if((newLeftDist < twoStridesAway) && (newLeftDist > oneStrideAway))
+      {
+        leftHazardScore = 2;
+        if(serialDebugPrint == true)
+        {
+          Serial.print("| Left Sensor | ");
+          Serial.print("Direction: Approaching ");
+          Serial.print("Distance: ");
+          Serial.print(newLeftDist);
+          Serial.print("mm - Within two strides - Velocity: ");
+          Serial.print(leftVelEst);
+          Serial.print("m/s");
+        }
+      }
+
+      if(newLeftDist < oneStrideAway)
+      {
+        leftHazardScore = 1;
+        if(serialDebugPrint == true)
+        {
+          Serial.print("| Left Sensor | ");
+          Serial.print("Direction: Approaching ");
+          Serial.print("Distance: ");
+          Serial.print(newLeftDist);
+          Serial.print("mm - Within one strides - Velocity: ");
+          Serial.print(leftVelEst);
+          Serial.print("m/s");
+        }
+      }
+      break;
+    case 2: // Object moving away from sensor
+      leftHazardScore = 0;
       if(serialDebugPrint == true)
       {
-        Serial.println("!!WARNING!! -- !!IMPACT PROBABLE!!");
+        Serial.print("| Left Sensor | ");
+        Serial.print("Direction: Departing - Distance: ");
+        Serial.print(newLeftDist);
+        Serial.print("mm - Object ignored.");
       }
-      
-      leftHazardScore = 5;
       break;
-    case 2:*/
-      switch(objDirectionLeft)
+    case 3: // Object probably stationary
+      leftHazardScore = 0;
+      if(serialDebugPrint == true)
       {
-        case 1: // Object moving towards sensor
-          // Distance threshold detection
-          if(newLeftDist > twoStridesAway)
-          {
-            leftHazardScore = 0;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is more than two strides away, leftHazardScore = ");
-              Serial.print(leftHazardScore);
-              Serial.print(", leftHapticState = ");
-              Serial.println(leftHapticState);
-            }
-          }
-
-          if((newLeftDist < twoStridesAway) && (newLeftDist > oneStrideAway))
-          {
-            leftHazardScore = 2;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is within two strides, leftHazardScore = ");
-              Serial.print(leftHazardScore);
-              Serial.print(", leftHapticState = ");
-              Serial.println(leftHapticState);
-            }
-          }
-
-          if(newLeftDist < oneStrideAway)
-          {
-            leftHazardScore = 1;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is within one stride, leftHazardScore = ");
-              Serial.print(leftHazardScore);
-              Serial.print(", leftHapticState = ");
-              Serial.println(leftHapticState);
-            }
-          }
-          break;
-        case 2: // Object moving away from sensor
-          leftHazardScore = 0;
-          if(serialDebugPrint == true)
-          {
-            Serial.print("Object is departing, leftHazardScore = ");
-            Serial.print(leftHazardScore);
-            Serial.print(", leftHapticState = ");
-            Serial.println(leftHapticState);
-            /*Serial.print(leftVelEst);
-            Serial.print("m/s.");
-            Serial.println("");*/
-          }
-          break;
-        case 3: // Object probably stationary
-          // Distance threshold detection?
-          if(newLeftDist > twoStridesAway)
-          {
-            leftHazardScore = 0;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is more than two strides away and is stationary, leftHazardScore = ");
-              Serial.print(leftHazardScore);
-              Serial.print(", leftHapticState = ");
-              Serial.print(leftHapticState);
-              Serial.print(", velocity = ");
-              Serial.print(leftVelEst);
-            }
-          }
-
-          if((newLeftDist < twoStridesAway) && (newLeftDist > oneStrideAway))
-          {
-            leftHazardScore = 4;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is within two strides and is stationary, leftHazardScore = ");
-              Serial.print(leftHazardScore);
-              Serial.print(", leftHapticState = ");
-              Serial.print(leftHapticState);
-              Serial.print(", velocity = ");
-              Serial.print(leftVelEst);
-            }
-          }
-
-          if(newLeftDist < oneStrideAway)
-          {
-            leftHazardScore = 3;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is within one stride and is stationary, leftHazardScore = ");
-              Serial.print(leftHazardScore);
-              Serial.print(", leftHapticState = ");
-              Serial.print(leftHapticState);
-              Serial.print(", velocity = ");
-              Serial.print(leftVelEst);
-            }
-          }
-          if(serialDebugPrint == true)
-          {
-            Serial.println("Is out of range and is presumed stationary.");
-          }
-          break;
-        default:
-          break;
+        Serial.print("| Left Sensor | ");
+        Serial.print("Direction: Stationary - Distance: ");
+        Serial.print(newLeftDist);
+        Serial.print("mm - Object ignored.");
       }
-  /*    break;
+      break;
     default:
-      break;      
-  }*/
-}
-
-void leftImpactETA_func()
-{
-  leftImpactETA = newLeftDist / leftVelEst;
-  if (leftImpactETA < 500.00 && leftImpactETA > 0.00)
-  {
-    leftImpendingImpact = 1;
-  }
-  else
-  {
-    leftImpendingImpact = 2;
+      break;
   }
 }
 
@@ -465,22 +397,22 @@ void leftHapticFeedback_func () //Responsible for generating haptic feedback
     if (leftHapticState == 0)
     {
       leftHapticState = leftHapticSet;
-      if(serialDebugPrint == true)
+      /*if(serialDebugPrint == true)
       {
         Serial.print("\t\tVibrate ON, leftHapticState = ");
         Serial.print(leftHapticState);
         Serial.println("");
-      }
+      }*/
     }
     else
     {
       leftHapticState = 0;
-      if(serialDebugPrint == true)
+      /*if(serialDebugPrint == true)
       {
         Serial.print("\t\tVibrate OFF, leftHapticState = ");
         Serial.print(leftHapticState);
         Serial.println("");
-      }
+      }*/
     }
     analogWrite(leftHapticPin, leftHapticState); 
   }
@@ -528,170 +460,113 @@ void objRghtDirectionClassification_func() //Deduces the direction of motion of 
   if (rghtVelEst < rghtVelAvg && rghtVelEst >0.1) // Object is approaching
   {
     objDirectionRght = 1;
-    if(serialDebugPrint == true)
+    /*if(serialDebugPrint == true)
     {
       Serial.print("\t\t!!Warning!! Object is approaching right at: ");
       Serial.print(rghtVelEst);
       Serial.print("m/s.");
       Serial.println("");
-    }
+    }*/
   }
 
   if (rghtVelEst > rghtVelAvg && rghtVelEst < -0.1) // Object is departing
   {
     objDirectionRght = 2;
-    if(serialDebugPrint == true)
+    /*if(serialDebugPrint == true)
     {
       Serial.print("\t\tObject is departing right at: ");
       Serial.print(rghtVelEst);
       Serial.print("m/s.");
       Serial.println("");
-    }
+    }*/
   }
 
   if (rghtVelEst <0.1 && rghtVelEst > -0.1) // Object is stationary -- Change to use "avgVelEst" at a later date
   {
     objDirectionRght = 3;
-    if(serialDebugPrint == true)
+    /*if(serialDebugPrint == true)
     {
       Serial.print("\t\tObject right is presumed to be stationary.");
       Serial.println("");
-    }
+    }*/
   }
 }
 
 void rghtHazardClassification_func() //Main hazard classification function
 {
-  /*switch(rghtImpendingImpact)
+  switch(objDirectionRght)
   {
-    case 1:
+    case 1: // Object moving towards sensor
+      // Distance threshold detection
+      if(newRghtDist > twoStridesAway)
+      {
+        rghtHazardScore = 0;
+        if(serialDebugPrint == true)
+        {
+          Serial.print("\t\t| Right Sensor | ");
+          Serial.print("Direction: Approaching - Distance: ");
+          Serial.print(newRghtDist);
+          Serial.print("mm - Object ignored.");
+          Serial.println("");
+        }
+      }
+
+      if((newRghtDist < twoStridesAway) && (newRghtDist > oneStrideAway))
+      {
+        rghtHazardScore = 2;
+        if(serialDebugPrint == true)
+        {
+          Serial.print("\t\t| Right Sensor | ");
+          Serial.print("Direction: Approaching ");
+          Serial.print("Distance: ");
+          Serial.print(newRghtDist);
+          Serial.print("mm - Within two strides - Velocity: ");
+          Serial.print(rghtVelEst);
+          Serial.print("m/s");
+          Serial.println("");
+        }
+      }
+
+      if(newRghtDist < oneStrideAway)
+      {
+        rghtHazardScore = 1;
+        if(serialDebugPrint == true)
+        {
+          Serial.print("\t\t| Right Sensor | ");
+          Serial.print("Direction: Approaching ");
+          Serial.print("Distance: ");
+          Serial.print(newRghtDist);
+          Serial.print("mm - Within one strides - Velocity: ");
+          Serial.print(rghtVelEst);
+          Serial.print("m/s");
+          Serial.println("");
+        }
+      }
+      break;
+    case 2: // Object moving away from sensor
+      rghtHazardScore = 0;
       if(serialDebugPrint == true)
       {
-        Serial.println("!!WARNING!! -- !!IMPACT PROBABLE!!");
+        Serial.print("\t\t| Right Sensor | ");
+        Serial.print("Direction: Departing - Distance: ");
+        Serial.print(newRghtDist);
+        Serial.print("mm - Object ignored.");
+        Serial.println("");
       }
-      rghtHazardScore = 5;
       break;
-    case 2:*/
-      switch(objDirectionRght)
+    case 3: // Object probably stationary
+      rghtHazardScore = 0;
+      if(serialDebugPrint == true)
       {
-        case 1: // Object moving towards sensor
-          // Distance threshold detection
-          if(newRghtDist > twoStridesAway)
-          {
-            rghtHazardScore = 0;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is more than two strides away, rghtHazardScore = ");
-              Serial.print(rghtHazardScore);
-              Serial.print(", rghtHapticState = ");
-              Serial.println(rghtHapticState);
-            }
-          }
-
-          if((newRghtDist < twoStridesAway) && (newRghtDist > oneStrideAway))
-          {
-            rghtHazardScore = 2;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is within two strides, rghtHazardScore = ");
-              Serial.print(rghtHazardScore);
-              Serial.print(", rghtHapticState = ");
-              Serial.println(rghtHapticState);
-            }
-          }
-
-          if(newRghtDist < oneStrideAway)
-          {
-            rghtHazardScore = 1;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is within one stride, rghtHazardScore = ");
-              Serial.print(rghtHazardScore);
-              Serial.print(", rghtHapticState = ");
-              Serial.println(rghtHapticState);
-            }
-          }
-          break;
-        case 2: // Object moving away from sensor
-          rghtHazardScore = 0;
-          if(serialDebugPrint == true)
-          {
-            Serial.print("Object is departing, rghtHazardScore = ");
-            Serial.print(rghtHazardScore);
-            Serial.print(", rghtHapticState = ");
-            Serial.println(rghtHapticState);
-            /*Serial.print(rghtVelEst);
-            Serial.print("m/s.");
-            Serial.println("");*/
-          }
-          break;
-        case 3: // Object probably stationary
-          // Distance threshold detection?
-          if(newRghtDist > twoStridesAway)
-          {
-            rghtHazardScore = 0;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is more than two strides away and is stationary, rghtHazardScore = ");
-              Serial.print(rghtHazardScore);
-              Serial.print(", rghtHapticState = ");
-              Serial.print(rghtHapticState);
-              Serial.print(", velocity = ");
-              Serial.print(rghtVelEst);
-            }
-          }
-
-          if((newRghtDist < twoStridesAway) && (newRghtDist > oneStrideAway))
-          {
-            rghtHazardScore = 4;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is within two strides and is stationary, rghtHazardScore = ");
-              Serial.print(rghtHazardScore);
-              Serial.print(", rghtHapticState = ");
-              Serial.print(rghtHapticState);
-              Serial.print(", velocity = ");
-              Serial.print(rghtVelEst);
-            }
-          }
-
-          if(newRghtDist < oneStrideAway)
-          {
-            rghtHazardScore = 3;
-            if(serialDebugPrint == true)
-            {
-              Serial.print("Object is within one stride and is stationary, rghtHazardScore = ");
-              Serial.print(rghtHazardScore);
-              Serial.print(", rghtHapticState = ");
-              Serial.print(rghtHapticState);
-              Serial.print(", velocity = ");
-              Serial.print(rghtVelEst);
-            }
-          }
-          if(serialDebugPrint == true)
-          {
-            Serial.println("Is out of range and is presumed stationary.");
-          }
-          break;
-        default:
-          break;
+        Serial.print("\t\t| Right Sensor | ");
+        Serial.print("Direction: Stationary - Distance: ");
+        Serial.print(newRghtDist);
+        Serial.print("mm - Object ignored.");
+        Serial.println("");
       }
-  /*    break;
+      break;
     default:
-      break;      
-  }*/
-}
-
-void rghtImpactETA_func()
-{
-  rghtImpactETA = newLeftDist / rghtVelEst;
-  if (rghtImpactETA < 500.00 && rghtImpactETA > 0.00)
-  {
-    rghtImpendingImpact = 1;
-  }
-  else
-  {
-    rghtImpendingImpact = 2;
+      break;
   }
 }
 
@@ -735,23 +610,23 @@ void rghtHapticFeedback_func () //Responsible for generating haptic feedback
     if (rghtHapticState == 0)
     {
       rghtHapticState = rghtHapticSet;
-      if(serialDebugPrint == true)
+      /*if(serialDebugPrint == true)
       {
         Serial.print("\t\tVibrate ON, rghtHapticState = ");
         Serial.print(rghtHapticState);
         Serial.println("");
-      }
+      }*/
     }
     else
     {
       rghtHapticState = 0;
-      if(serialDebugPrint == true)
+      /*if(serialDebugPrint == true)
       {
         Serial.print("\t\tVibrate OFF, rghtHapticState = ");
         Serial.print(rghtHapticState);
         Serial.println("");
-      }
+      }*/
     }
-  analogWrite(rghtHapticPin, rghtHapticState); 
+    analogWrite(rghtHapticPin, rghtHapticState); 
   }
 }
