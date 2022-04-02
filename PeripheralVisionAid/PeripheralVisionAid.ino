@@ -72,8 +72,8 @@ float deltRghtDist = 0;
 float rghtVelEst = 0;
 
 //~~Distance Thresholds~~//
-int twoStridesAway = 2100;
-int oneStrideAway = 1060;
+int twoStridesAway = 2007;
+int oneStrideAway = 947;
 
 //~~Object Direction and Impact Warning Variables~~//
 int objDirectionLeft = 0;
