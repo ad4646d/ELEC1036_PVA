@@ -104,8 +104,8 @@ unsigned long rghtHapticTimerStart = 0;
 unsigned long leftHapticTimerEnd = 0; //previously previousMillis
 unsigned long rghtHapticTimerEnd = 0;
 
-long leftHapticInterval = 0; //previously interval
-long rghtHapticInterval = 0;
+long leftHapticDutyCyc = 0; //previously interval
+long rghtHapticDutyCyc = 0;
 
 //~~Velocity Averaging~~/
 #define leftVelVals 3
@@ -225,7 +225,7 @@ void leftVelEst_func() //Estimating velocity of objects approaching left sensor
   //Left Sensor Read
   if(SEN_LEFT.dataReady() == true) //Will only run if left sensor has data ready
   {
-   newLeftDist = SEN_LEFT.read();
+    newLeftDist = SEN_LEFT.read();
   
     newLeftTime = millis();
     deltLeftTime = (newLeftTime-prevLeftTime);
@@ -255,7 +255,7 @@ void leftVelAvg_func() //Calculates rolling average for left velocity
   leftVelAvg /= leftVelVals;
 }
 
-void objLeftDirectionClassification_func()
+void objLeftDirectionClassification_func() //Deduces the direction of motion of an object
 {
   if (leftVelEst < leftVelAvg && leftVelEst >0.1) // Object is approaching
   {
@@ -289,7 +289,7 @@ void objLeftDirectionClassification_func()
   }
 }
 
-void leftHazardClassification_func()
+void leftHazardClassification_func() //Main hazard classification function
 {
   /*switch(leftImpendingImpact)
   {
@@ -425,7 +425,7 @@ void leftImpactETA_func()
   }
 }
 
-void leftHapticFeedback_func ()
+void leftHapticFeedback_func () //Responsible for generating haptic feedback 
 {
   leftHapticTimerStart = millis();
   
@@ -433,33 +433,33 @@ void leftHapticFeedback_func ()
   {
     case 0:
       leftHapticSet = 0;
-      leftHapticInterval = 0;
+      leftHapticDutyCyc = 0;
       break;
     case 1: // Moving towards within 1 stride -- medium priority
       leftHapticSet = map(newLeftDist, twoStridesAway, 10, 55, 255);
-      leftHapticInterval = 25;
+      leftHapticDutyCyc = 25;
       break;
     case 2: // Moving towards within 2 strides -- medium priority
       leftHapticSet = map(newLeftDist, twoStridesAway, 10, 55, 255);
-      leftHapticInterval = 50;
+      leftHapticDutyCyc = 50;
       break;
     case 3: // Stationary within one stride -- low priority
       leftHapticSet = 0;
-      leftHapticInterval = 75;
+      leftHapticDutyCyc = 75;
       break;
     case 4: // Stationary within two strides -- low priority
       leftHapticSet = 0;
-      leftHapticInterval = 60;
+      leftHapticDutyCyc = 60;
       break;
     case 5: // Impact possible -- high priority
       leftHapticSet = 255;
-      leftHapticInterval = 10;
+      leftHapticDutyCyc = 10;
       break;
     default:
       break;
   }
     
-  if (leftHapticTimerStart - leftHapticTimerEnd >= leftHapticInterval)
+  if (leftHapticTimerStart - leftHapticTimerEnd >= leftHapticDutyCyc)
   {
     leftHapticTimerEnd = leftHapticTimerStart;
     if (leftHapticState == 0)
@@ -523,7 +523,7 @@ void rghtVelAvg_func() //Calculates rolling average for right velocity
   rghtVelAvg /= rghtVelVals;
 }
 
-void objRghtDirectionClassification_func()
+void objRghtDirectionClassification_func() //Deduces the direction of motion of an object
 {
   if (rghtVelEst < rghtVelAvg && rghtVelEst >0.1) // Object is approaching
   {
@@ -560,7 +560,7 @@ void objRghtDirectionClassification_func()
   }
 }
 
-void rghtHazardClassification_func()
+void rghtHazardClassification_func() //Main hazard classification function
 {
   /*switch(rghtImpendingImpact)
   {
@@ -695,7 +695,7 @@ void rghtImpactETA_func()
   }
 }
 
-void rghtHapticFeedback_func ()
+void rghtHapticFeedback_func () //Responsible for generating haptic feedback 
 {
   rghtHapticTimerStart = millis();
   
@@ -703,33 +703,33 @@ void rghtHapticFeedback_func ()
   {
     case 0:
       rghtHapticSet = 0;
-      rghtHapticInterval = 0;
+      rghtHapticDutyCyc = 0;
       break;
     case 1: // Moving towards within 1 stride -- medium priority
-      rghtHapticInterval = 25; //Duty cycle
+      rghtHapticDutyCyc = 25; //Duty cycle
       rghtHapticSet = map(newRghtDist, twoStridesAway, 10, 55, 255);
       break;
-    case 2: // Moving towards within 2 strides -- medium priority
-      rghtHapticInterval = 50;
+    case 2: // Moving towards within 2 strides -- low priority
+      rghtHapticDutyCyc = 50;
       rghtHapticSet = map(newRghtDist, twoStridesAway, 10, 55, 255);
       break;
     case 3: // Stationary within one stride -- low priority
       rghtHapticSet = 0;
-      rghtHapticInterval = 75;
+      rghtHapticDutyCyc = 75;
       break;
     case 4: // Stationary within two strides -- low priority
       rghtHapticSet = 0;
-      rghtHapticInterval = 60;
+      rghtHapticDutyCyc = 60;
       break;
     case 5: // Impact possible -- high priority
       rghtHapticSet = 255;
-      rghtHapticInterval = 10;
+      rghtHapticDutyCyc = 10;
       break;
     default:
       break;
   }
     
-  if (rghtHapticTimerStart - rghtHapticTimerEnd >= rghtHapticInterval)
+  if (rghtHapticTimerStart - rghtHapticTimerEnd >= rghtHapticDutyCyc)
   {
     rghtHapticTimerEnd = rghtHapticTimerStart;
     if (rghtHapticState == 0)
