@@ -304,7 +304,7 @@ void leftHazardClassification_func() //Main hazard classification function
       }
       if((newLeftDist < twoStridesAway) && (newLeftDist > oneStrideAway))
       {
-        leftHazardScore = 2;
+        leftHazardScore = 1;
         if(serialDebugPrint == true)
         {
           Serial.print("| Left Sensor | ");
@@ -313,13 +313,15 @@ void leftHazardClassification_func() //Main hazard classification function
           Serial.print(newLeftDist);
           Serial.print("mm - Within two strides - Velocity: ");
           Serial.print(leftVelEst);
+          Serial.print("m/s - Avg Velocity: ");
+          Serial.print(leftVelAvg);
           Serial.print("m/s");
         }
       }
 
       if(newLeftDist < oneStrideAway)
       {
-        leftHazardScore = 1;
+        leftHazardScore = 2;
         if(serialDebugPrint == true)
         {
           Serial.print("| Left Sensor | ");
@@ -328,6 +330,8 @@ void leftHazardClassification_func() //Main hazard classification function
           Serial.print(newLeftDist);
           Serial.print("mm - Within one strides - Velocity: ");
           Serial.print(leftVelEst);
+          Serial.print("m/s - Avg Velocity: ");
+          Serial.print(leftVelAvg);
           Serial.print("m/s");
         }
       }
@@ -367,25 +371,13 @@ void leftHapticFeedback_func () //Responsible for generating haptic feedback
       leftHapticSet = 0;
       leftHapticDutyCyc = 0;
       break;
-    case 1: // Moving towards within 1 stride -- medium priority
-      leftHapticSet = map(newLeftDist, twoStridesAway, 10, 55, 255);
-      leftHapticDutyCyc = 25;
-      break;
-    case 2: // Moving towards within 2 strides -- medium priority
+    case 1: // Moving towards within 2 strides -- low priority
       leftHapticSet = map(newLeftDist, twoStridesAway, 10, 55, 255);
       leftHapticDutyCyc = 50;
       break;
-    case 3: // Stationary within one stride -- low priority
-      leftHapticSet = 0;
-      leftHapticDutyCyc = 75;
-      break;
-    case 4: // Stationary within two strides -- low priority
-      leftHapticSet = 0;
-      leftHapticDutyCyc = 60;
-      break;
-    case 5: // Impact possible -- high priority
-      leftHapticSet = 255;
-      leftHapticDutyCyc = 10;
+    case 2: // Moving towards within 1 stride -- medium priority
+      leftHapticSet = map(newLeftDist, twoStridesAway, 10, 55, 255);
+      leftHapticDutyCyc = 25;
       break;
     default:
       break;
@@ -513,7 +505,7 @@ void rghtHazardClassification_func() //Main hazard classification function
 
       if((newRghtDist < twoStridesAway) && (newRghtDist > oneStrideAway))
       {
-        rghtHazardScore = 2;
+        rghtHazardScore = 1;
         if(serialDebugPrint == true)
         {
           Serial.print("\t\t| Right Sensor | ");
@@ -522,6 +514,8 @@ void rghtHazardClassification_func() //Main hazard classification function
           Serial.print(newRghtDist);
           Serial.print("mm - Within two strides - Velocity: ");
           Serial.print(rghtVelEst);
+          Serial.print("m/s - Avg Velocity: ");
+          Serial.print(rghtVelAvg);
           Serial.print("m/s");
           Serial.println("");
         }
@@ -529,7 +523,7 @@ void rghtHazardClassification_func() //Main hazard classification function
 
       if(newRghtDist < oneStrideAway)
       {
-        rghtHazardScore = 1;
+        rghtHazardScore = 2;
         if(serialDebugPrint == true)
         {
           Serial.print("\t\t| Right Sensor | ");
@@ -538,6 +532,8 @@ void rghtHazardClassification_func() //Main hazard classification function
           Serial.print(newRghtDist);
           Serial.print("mm - Within one strides - Velocity: ");
           Serial.print(rghtVelEst);
+          Serial.print("m/s - Avg Velocity: ");
+          Serial.print(rghtVelAvg);
           Serial.print("m/s");
           Serial.println("");
         }
@@ -580,25 +576,13 @@ void rghtHapticFeedback_func () //Responsible for generating haptic feedback
       rghtHapticSet = 0;
       rghtHapticDutyCyc = 0;
       break;
-    case 1: // Moving towards within 1 stride -- medium priority
-      rghtHapticDutyCyc = 25; //Duty cycle
+    case 1: // Moving towards within 2 stride -- low priority
+      rghtHapticDutyCyc = 50; //Duty cycle
       rghtHapticSet = map(newRghtDist, twoStridesAway, 10, 55, 255);
       break;
-    case 2: // Moving towards within 2 strides -- low priority
-      rghtHapticDutyCyc = 50;
+    case 2: // Moving towards within 1 stride -- medium priority
+      rghtHapticDutyCyc = 25;
       rghtHapticSet = map(newRghtDist, twoStridesAway, 10, 55, 255);
-      break;
-    case 3: // Stationary within one stride -- low priority
-      rghtHapticSet = 0;
-      rghtHapticDutyCyc = 75;
-      break;
-    case 4: // Stationary within two strides -- low priority
-      rghtHapticSet = 0;
-      rghtHapticDutyCyc = 60;
-      break;
-    case 5: // Impact possible -- high priority
-      rghtHapticSet = 255;
-      rghtHapticDutyCyc = 10;
       break;
     default:
       break;
