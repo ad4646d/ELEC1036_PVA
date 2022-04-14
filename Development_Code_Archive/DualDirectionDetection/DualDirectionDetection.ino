@@ -180,12 +180,14 @@ void leftVelAvg_func() //Calculates rolling average for left velocity
 
 void objLeftDirectionClassification_func()
 {
-  if (leftVelEst < leftVelAvg && leftVelEst >0.1) // Object is approaching
+  //if (leftVelEst < leftVelAvg && leftVelEst >0.1) // Object is approaching
+  if (leftVelEst < leftVelAvg)
   {
     objDirectionLeft = 1;
   }
 
-  if (leftVelEst > leftVelAvg && leftVelEst < -0.1) // Object is departing
+  //if (leftVelEst > leftVelAvg && leftVelEst < -0.1) // Object is departing
+  if (leftVelEst > leftVelAvg)
   {
     objDirectionLeft = 2;
   }
@@ -256,12 +258,14 @@ void rghtVelAvg_func() //Calculates rolling average for right velocity
 
 void objRghtDirectionClassification_func()
 {
-  if (rghtVelEst < rghtVelAvg && rghtVelEst >0.1) // Object is approaching
+  //if (rghtVelEst < rghtVelAvg && rghtVelEst >0.1) // Object is approaching
+  if (rghtVelEst < rghtVelAvg)
   {
     objDirectionRght = 1;
   }
 
-  if (rghtVelEst > rghtVelAvg && rghtVelEst < -0.1) // Object is departing
+  //if (rghtVelEst > rghtVelAvg && rghtVelEst < -0.1) // Object is departing
+  if (rghtVelEst > rghtVelAvg)
   {
     objDirectionRght = 2;
   }
@@ -296,5 +300,3 @@ void objDirectionRghtPrint_func()
       break;
   }
 }
-
-
